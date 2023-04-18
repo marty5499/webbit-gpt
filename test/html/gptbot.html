@@ -74,6 +74,10 @@
 
         function appendToShow(msg, isEnd) {
             if (msg == '') return;
+            if (msg.indexOf('"""') >= 0) {
+                msg = msg.replaceAll('"""', '```');
+                console.log("_codeType:", _codeType, " msg=", msg);
+            }
             try {
                 setCode(msg);
             } catch (e) { }
