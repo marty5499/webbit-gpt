@@ -14,7 +14,7 @@
             {
                 "actor": "python",
                 "text": "計算BMI",
-                "value": "計算BMI,讓用戶輸入身高與體重,然後顯示BMI數值並鼓勵用戶養成運動習慣"
+                "value": "計算BMI,讓用戶輸入身高與體重,然後顯示BMI數值並鼓勵用戶接下來的運動"
             },
             {
                 "actor": "python",

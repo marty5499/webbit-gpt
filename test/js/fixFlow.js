@@ -61,9 +61,7 @@ class FixFlow {
         }
         // 加工 '判斷' '比較'
         if (valObj['label'].indexOf("判斷") >= 0 || keyName.indexOf("判斷") >= 0
-            || valObj['label'].indexOf("比較") >= 0 || keyName.indexOf("比較") >= 0
-            || valObj['label'].indexOf("嗎") >= 0 || keyName.indexOf("嗎") >= 0
-            || valObj['label'].indexOf("檢查") >= 0 || keyName.indexOf("檢查") >= 0) {
+            || valObj['label'].indexOf("比較") >= 0 || keyName.indexOf("比較") >= 0) {
             this._cvt[keyName] = valObj;
             valObj['shape'] = 'diamond';
             process = true;

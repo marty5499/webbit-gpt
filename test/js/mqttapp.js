@@ -12,13 +12,7 @@ class MQTTApp {
         };
         this.onConnectPromise = null;
         this.subscriptions = {}; // 存儲訂閱關係的對象
-        var topic = "gpt";
-        if (parent.location.href.indexOf('/test/dev') > 0) {
-            topic = "dev";
-        }
-        else if (parent.location.href.indexOf('/test/gpt') > 0) {
-            topic = "gpt";
-        }
+        var topic = "chat";
         this.pubTopic = topic + '_prompt/' + userId;
         this.respTopic_cb = topic + "_completion/" + this.userId;
         this.respTopic_end = topic + "_completion_end/" + this.userId;
@@ -31,6 +25,7 @@ class MQTTApp {
             cb(msg, false);
         });
         this.subscribe(this.respTopic_end, function (msg) {
+            console.log("=============================");
             cb(msg, true);
         });
     }

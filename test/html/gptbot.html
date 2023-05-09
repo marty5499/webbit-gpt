@@ -114,86 +114,45 @@
         const carousel = document.getElementById('carousel');
         const cookie = new Cookie(2);
 
-
-
         function voiceToTextarea(str) {
             if (str.trim() == '') return;
             gpt.prompt(str);
         }
 
+        function outputSource(sources) {
+            var data = "";
+            for (var i in sources) {
+                var src = sources[i];
+                var content = src['pageContent'];
+                var page = src['metadata']['pdf_numpages'];
+                var ref = src['metadata']['source'];
+                ref = ref.substring(ref.lastIndexOf('/') + 1);
+                content = content.replace("file:///Users/sheuyih-shiang/kingkit.codes/github/pyTube/", "");
+                data += "參考出處： " + ref + " , page:" + page;
+                data += "\n===============\n";
+                data += content + "\n\n\n";
+            }
+            return data;
+        }
+
         function appendToShow(msg, isEnd) {
             if (isEnd) {
-                var uuid = msg.split('\n\n$UUID$')[1];
-                if (typeof (uuid) != "undefined") {
-                    msg = msg.split('\n\n$UUID$')[0];
-                    gpt.setUUID(uuid);
-                }
-            }
-            //console.log(isEnd, msg);
-            wholeMsg = wholeMsg + "\n" + msg;
-            if (msg == '') return;
-            try {
-                var isCode = setCode(msg);
-                //console.log(isCode, msg);
-                // filter ``` , ```\n , }``` , }```\n
-                if (!isCode &&
-                    ((msg.indexOf('```') == 0) ||
-                        (msg.indexOf('}```') == 0)))
-                    msg = '&nbsp;&nbsp;&nbsp;完成\n';
-            } catch (e) { }
-            if (!isCode) {
+                debugger;
+                var json = JSON.parse(msg);
+                gpt.setUUID(json['uuid']);
+                var source = json['source'];
+                gpt.done();
+                gpt.wholeMsg = wholeMsg;
+                parent.editor.setCode(outputSource(source));
+                parent.flow.done();
+            } else {
+                if (msg == '') return;
+                //console.log(isEnd, msg);
+                wholeMsg = wholeMsg + "\n" + msg;
                 var cnt = gpt.read();
                 cnt = cnt + msg + "<br>";
                 gpt.write(cnt);
             }
-            //* enhance code function
-            if (isEnd) {
-                gpt.done();
-                gpt.wholeMsg = wholeMsg;
-                parent.flow.done();
-                // fix dirty codegen
-                var code = parent.editor.getCode();
-                code = code.replace('from webduino import WebBit', 'from webduino.webbit import WebBit');
-                code = code.replace('from Webbit import Webbit', 'from webduino.webbit import WebBit');
-                code = code.replace('webbit = Webbit()', 'webbit = WebBit()');
-                code = code.replace('wbit.no_tone(0)', '');
-                code = code.replace('wbit.tone(0,', 'wbit.tone(');
-                parent.editor.setCode(code);
-            }
-            //*/
-        }
-
-        function setGenCode(code) {
-            switch (_codeType) {
-                case 0: // python
-                    parent.editor.setCode(code);
-                    break;
-                case 1:
-                    parent.flow.setCode(tunningFlow(code));
-                    //parent.flow.setCode(code);
-                    break;
-            }
-        }
-
-        function tunningFlow(code) {
-            let fixCode = code;
-            var pos = fixCode.indexOf('{');
-            if (pos >= 0) {
-                fixCode = fixCode.substring(0, pos + 1) +
-                    '\nrankdir=TB\n' +
-                    'node[shape=box, style=filled, fillcolor=lightyellow]\n' +
-                    fixCode.substring(pos + 1);
-            }
-            let left = code.split('{').length - 1;
-            let right = code.split('}').length - 1;
-            let add = left - right;
-            for (i = 0; i < add; i++) {
-                fixCode += "}"
-            }
-            // enhance
-            fixCode = ff.convert(fixCode);
-            //console.log(fixCode);
-            return fixCode;
         }
 
         function isUrlEncoded(str) {
@@ -203,42 +162,6 @@
             } catch (e) {
                 return false;
             }
-        }
-
-        function setCode(code) {
-            if (code.indexOf('```') >= 0 && isCode) {
-                var pos = code.indexOf('```');
-                if (pos > 0) {
-                    genCode = genCode + code.substring(0, pos) + '\n';
-                    setGenCode(genCode);
-                }
-                genCode = '';
-                isCode = false;
-                return isCode;
-            }
-            if (code.indexOf('```') == 0) {
-                if (code.length > 3) {
-                    genCode = genCode +
-                        code.replace('```dot', '')
-                            .replace('```python', '')
-                            .replace('```graphviz', '')
-                            .replace('```', '');
-                }
-                _codeType = ++_codeType;
-                // when codeGen completed , check deploy btn if necessary
-                if (_codeType == 1) {
-                    var info = parseURL(parent.location.href);
-                    if (info['actor'] == 'wbit') {
-                        parent.Main.coms['deploy'].setEnable(true);
-                    }
-                }
-                isCode = true;
-                return isCode;
-            }
-            if (!isCode) return isCode;
-            genCode = genCode + code + '\n';
-            setGenCode(genCode);
-            return isCode
         }
 
         function parseURL(str) {
@@ -257,7 +180,7 @@
                     parent.location.href = data[0] + '#' + str + '?' + data[1];
                 }
             }
-            var result = { 'prompt': '', 'actor': 'python' };
+            var result = { 'prompt': '', 'actor': 'bio' };
             var userId = '';
             var hashIndex = str.indexOf('#');
             var questionIndex = str.indexOf('?');
