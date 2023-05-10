@@ -67,7 +67,7 @@ class ChatGPTBot extends LitElement {
     return html`
       <div id="chatbox"></div>
       <div id="input-area">
-        <textarea id='txtarea' placeholder="你想要讓 AI 做什麼 ?" rows="1" 
+        <textarea id='txtarea' placeholder="你想要問什麼問題 ?" rows="1" 
         @keydown="${this.handleTextareaKeyDown}" 
         @keypress="${this.handleTextareaKeyPress}"
         @input="${this.handleOnInput}"></textarea>
