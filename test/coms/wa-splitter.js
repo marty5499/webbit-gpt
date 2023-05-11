@@ -54,7 +54,8 @@ export class Splitter extends LitElement {
         var calWidth = self.leftFrame.offsetWidth + Splitter.barWidthPx;
         self.rightFrame.style.width = `calc(100% - ${calWidth}px)`;
         self.updateWidth(calWidth);
-        editor.blockEditor.resized();
+        if (typeof (editor) != 'undefined')
+            editor.blockEditor.resized();
 
         splitter.addEventListener("mousedown", (e) => {
             isDragging = true;
@@ -85,6 +86,7 @@ export class Splitter extends LitElement {
         this.leftFrame.style.width = this.startWidth + diffX + "px";
         var calWidth = this.leftFrame.offsetWidth + Splitter.barWidthPx;
         this.rightFrame.style.width = `calc(100% - ${calWidth}px)`;
+        if (typeof (editor) != 'undefined')
         editor.blockEditor.resized();
     }
 

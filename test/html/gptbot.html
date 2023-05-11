@@ -6,8 +6,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
     <!-- MQTT -->
     <script src="../js/mqttapp.js"></script>
-    <!-- Flow Enhance -->
-    <script src="../js/fixFlow.js"></script>
     <!-- Google Font Material Symbol -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap">
 
@@ -119,35 +117,18 @@
             gpt.prompt(str);
         }
 
-        function outputSource(sources) {
-            var data = "";
-            for (var i in sources) {
-                var src = sources[i];
-                var content = src['pageContent'];
-                var page = src['metadata']['pdf_numpages'];
-                var ref = src['metadata']['source'];
-                ref = ref.substring(ref.lastIndexOf('/') + 1);
-                content = content.replace("file:///Users/sheuyih-shiang/kingkit.codes/github/pyTube/", "");
-                data += "參考出處： " + ref + " , page:" + page;
-                data += "\n===============\n";
-                data += content + "\n\n\n";
-            }
-            return data;
-        }
-
         function appendToShow(msg, isEnd) {
             if (isEnd) {
-                debugger;
-                var json = JSON.parse(msg);
-                gpt.setUUID(json['uuid']);
-                var source = json['source'];
+                var uuid = msg.split('\n\n$UUID$')[1];
+                if (typeof (uuid) != "undefined") {
+                    msg = msg.split('\n\n$UUID$')[0];
+                    gpt.setUUID(uuid);
+                }
+                gpt.wholeMsg = wholeMsg + msg;
+                parent.markdown.setText(msg);
                 gpt.done();
-                gpt.wholeMsg = wholeMsg;
-                parent.editor.setCode(outputSource(source));
-                parent.flow.done();
             } else {
                 if (msg == '') return;
-                //console.log(isEnd, msg);
                 wholeMsg = wholeMsg + "\n" + msg;
                 var cnt = gpt.read();
                 cnt = cnt + msg + "<br>";
@@ -169,11 +150,7 @@
                 str = cookie.get('userId');
                 //str = str == '' ? '' : str;
                 if (str == '') {
-                    parent.Main.popup(
-                        "還差一步!",
-                        "填寫表單就能申請體驗囉! <a href='https://webduino.pse.is/gpt_er'>我要申請</a>",
-                        "info", "知道了")
-                    return;
+                    throw "userId not found!";
                 }
                 if (parent.location.href.indexOf('?') > 0) {
                     var data = parent.location.href.split('?');
@@ -217,10 +194,8 @@
         async function init() {
             parent.Main.registry("gpt", gpt);
             parent.Main.registry("voice", voice);
-            //parent.Main.registry("deploy", deploy);
-            parent.Main.registry("flow", parent.flow);
             parent.Main.registry("carousel", carousel);
-            parent.Main.registry("editor", parent.editor);
+            parent.Main.registry("markdown", parent.markdown);
             gpt.setMQTT(app);
             gpt.prompt(info['prompt']);
             await app.init(appendToShow);
@@ -232,7 +207,6 @@
             carousel.setActor(info['actor'], true);
 
             gpt.promptCallback(function (prompt) {
-                parent.Main.coms['output'].cls();
                 if (parent.Main.coms['mqtt'].failure) {
                     alert('連線中斷，請重新整理網頁');
                 }
@@ -247,9 +221,7 @@
                 //console.log("prompt callback:", prompt);
                 app.publish(carousel.actor + ":" + prompt);
                 gpt.start(carousel.actor);
-                parent.Main.coms['deploy'].setEnable(false);
-                parent.flow.processing();
-                parent.editor.setCode("");
+                parent.markdown.setText("");
             });
         }
     </script>
