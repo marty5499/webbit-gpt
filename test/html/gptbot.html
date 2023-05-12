@@ -126,6 +126,7 @@
                 }
                 gpt.wholeMsg = wholeMsg + msg;
                 parent.markdown.setText(msg);
+                gpt.setEnable(true);
                 gpt.done();
             } else {
                 if (msg == '') return;
@@ -199,6 +200,7 @@
             gpt.setMQTT(app);
             gpt.prompt(info['prompt']);
             await app.init(appendToShow);
+            gpt.setEnable(true);
 
             //將事件轉發到 Main
             carousel.select(function (idx, name) {
@@ -210,6 +212,7 @@
                 if (parent.Main.coms['mqtt'].failure) {
                     alert('連線中斷，請重新整理網頁');
                 }
+                gpt.setEnable(false);
                 parent.location.hash =
                     '#' + info['userId'] +
                     '?prompt=' + encodeURIComponent(prompt) +
