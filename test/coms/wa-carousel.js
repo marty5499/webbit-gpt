@@ -131,15 +131,16 @@ class ImageSlider extends LitElement {
     this.index = 0;
     this.lastIdx = -1;
     this.images = [
-      ['bio', '生物學 01', '../coms/bio.png', '320px','https://md.webduino.io/s/jW7cOvXmg'],
+      ['wbit', '客服', '../coms/wv2.png', '320px','https://md.webduino.io/s/jW7cOvXmg'],
       ['jack01', '程式設計實習', '../coms/jack01.png', '320px','https://md.webduino.io/s/3Jh3hCuJO'],
+      ['Marty', '我的小書僮', 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png', '320px','https://md.webduino.io/s/3Jh3hCuJO'],
       //['kebbi','../coms/kebbi.png', '320px'],
     ];
     this.actor = this.images[this.index][0];
     this.loadImages();
   }
 
-  setActor(actorName, focus) {
+  async setActor(actorName, focus) {
     if (arguments.length == 2 && focus) this.lastIdx = -1;
     for (var i = 0; i < this.images.length; i++) {
       if (this.images[i][0] == actorName) {
@@ -213,7 +214,7 @@ class ImageSlider extends LitElement {
         <span class="material-icons next">chevron_right</span></span>
         <span id="title" class="title"></span>
         <div id="slider" class="slider">
-          ${this.images.map((image) => html`<img src=${image[2]} />`)}
+          ${this.images.map((image) => html`<img src=${image[2]} width='100%'/>`)}
         </div>
       </div>
     `;

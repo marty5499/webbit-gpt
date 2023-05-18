@@ -230,8 +230,8 @@ class ChatGPTBot extends LitElement {
     this.uuid = uuid;
   }
 
-  setIconName(name) {
-    this.icon.src = '../coms/' + name + '.png';
+  setIconName(imgSrc) {
+    this.icon.src = imgSrc;
   }
 
   sending() {

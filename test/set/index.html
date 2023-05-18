@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Create AI</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+    <script src="./mqttapp.js"></script>
+</head>
+
+<body>
+    <div class="box-form">
+        <div class="left">
+            <div class="overlay">
+                <h2>我的小書僮</h2>
+                <p>建立屬於您的小書僮，幫您讀書，解答您的問題...</p>
+            </div>
+        </div>
+        <div class="right">
+            <h1>建立</h1>
+            <p>powered by Webduino</p>
+            <div class="inputs">
+                <input id='aiName' type="text" placeholder="小書僮名字" value="">
+                <br>
+                <input id='aiMemo' type="text" placeholder="小書僮描述" value="">
+                <br>
+                <input id='aiImg' type="text" placeholder="小書僮圖片連結" value="">
+                <br>
+                <input id='aiFolderURL' type="text" placeholder="雲端硬碟目錄連結" value="">
+            </div>
+            <br><br>
+            <div id="msg" style="height:80px;width:200px;font-size:1.5em"></div>
+            <br>
+            <button id="create" class='create-button' onclick="create()">建立</button>
+        </div>
+    </div>
+
+    <script>
+        function create() {
+            var msg = document.getElementById('msg');
+            var aiName = document.getElementById('aiName').value;
+            var aiMemo = document.getElementById('aiMemo').value;
+            var aiImg = document.getElementById('aiImg').value;
+            var aiFolderURL = document.getElementById('aiFolderURL').value;
+
+            /*/ test
+            aiName = "Marty";
+            aiMemo = "我的小書僮";
+            aiImg = 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png';
+            aiFolderURL = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE'
+            //*/
+
+            var url = 'https://chat.nodered.vip/api/create?' +
+                'srcFolderURL=' + aiFolderURL +
+                '&aiName=' + aiName +
+                '&aiMemo=' + aiMemo +
+                '&aiImg=' + aiImg +
+                "&aiFolderURL=" + aiFolderURL;
+
+            msg.innerHTML = "建立中...";
+
+            fetch(url, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("resp:", data);
+                    var respTopic = data['respTopic'];
+                    msg.innerHTML = "匯入知識集...";
+                    mqtt.subscribe(respTopic, function (mqttMsg) {
+                        msg.innerHTML = mqttMsg;
+                        if (mqttMsg == '處理完成') {
+                            msg.innerHTML = 
+                            '<a href="../chat#guest?actor=' + aiName + '">開啟小書僮</a>';
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('發生錯誤:', error);
+                });
+        }
+        var mqtt = new MQTTApp("" + Math.random());
+        mqtt.connect();
+    </script>
+
+</body>
+
+</html>

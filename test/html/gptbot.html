@@ -6,16 +6,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
     <!-- MQTT -->
     <script src="../js/mqttapp.js"></script>
+    <script src="../js/cookie.js"></script>
     <!-- Google Font Material Symbol -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap">
-
     <script type="module" src="../coms/wa-select-prompt.js"></script>
     <script type="module" src="../coms/wa-voice.js"></script>
-    <!--
-    <script type="module" src="../coms/wa-deploy-bitv2.js"></script>
-    -->
     <script type="module" src="../coms/wa-gpt-bot.js"></script>
-    <script type="module" src="../coms/wa-carousel.js"></script>
+    <script type="module" src="../coms/wa-qa-bot.js"></script>
 
     <style>
         :root {
@@ -63,53 +60,24 @@
 
     <div id="gptbot-content">
         <div class="quiz-panel">
-            <wa-carousel id="carousel"></wa-carousel>
+            <img id='aiImg' src="https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png"
+                width="100%">
         </div>
         <div class="chat-panel">
-            <wa-select-prompt style="width:100%"></wa-select-prompt><br>
             <wa-gpt-bot id="gpt"></wa-gpt-bot>
             <br>
             <div class="menuBar">
                 <wa-voice id='voice' class='menuBtn' callback="voiceToTextarea"></wa-voice>
                 <wa-gpt-btn id="sendBtn" class='menuBtn' callback="send"></wa-gpt-btn>
-                <!--
-                <wa-deploy-bitv2 id="deploy" class='menuBtn'></wa-deploy-bitv2>
-                -->
             </div>
         </div>
     </div>
 
     <script>
-        class Cookie {
-            constructor(months) {
-                this.expires = new Date();
-                this.expires.setMonth(this.expires.getMonth() + months);
-            }
-
-            set(key, value) {
-                document.cookie = `${key}=${value};expires=${this.expires.toUTCString()}`;
-            }
-
-            get(key) {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.startsWith(key + '=')) {
-                        return cookie.substring(key.length + 1);
-                    }
-                }
-                return '';
-            }
-        }
-
-        var isCode = false;
-        var codeType = ['python', 'flow'];
-        var _codeType = -1;
-        var genCode = '';
         var wholeMsg = '';
         const textarea = document.getElementById('show');
         const voice = document.getElementById('voice');
-        const carousel = document.getElementById('carousel');
+        const carousel = { actor: '' };
         const cookie = new Cookie(2);
 
         function voiceToTextarea(str) {
@@ -158,7 +126,7 @@
                     parent.location.href = data[0] + '#' + str + '?' + data[1];
                 }
             }
-            var result = { 'prompt': '', 'actor': 'bio' };
+            var result = { 'prompt': '', 'actor': '' };
             var userId = '';
             var hashIndex = str.indexOf('#');
             var questionIndex = str.indexOf('?');
@@ -186,27 +154,40 @@
                     result[parts[0]] = decodeURIComponent(parts[1].replace(/\+/g, ' '));
                 }
             }
+            carousel.actor = result['actor'];
             return result;
         }
 
         var info = parseURL(parent.location.href);
         const app = new MQTTApp(info['userId'] + "_" + Math.random());
 
+        // 
+        function updateActor(name) {
+            var url = 'https://chat.nodered.vip/api/actor?name=' + name;
+            fetch(url, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    carousel.img = data['img'];
+                    aiImg.src = carousel.img;
+                    console.log("resp:", data);
+                })
+                .catch(error => {
+                    console.error('發生錯誤:', error);
+                });
+        }
+
         async function init() {
+            updateActor(carousel.actor);
             parent.Main.registry("gpt", gpt);
             parent.Main.registry("voice", voice);
-            parent.Main.registry("carousel", carousel);
             parent.Main.registry("markdown", parent.markdown);
             gpt.setMQTT(app);
             gpt.prompt(info['prompt']);
             await app.init(appendToShow);
             gpt.setEnable(true);
-
-            //將事件轉發到 Main
-            carousel.select(function (idx, name) {
-                parent.Main.eventTrigger("carousel", "setActor", [idx, name]);
-            });
-            carousel.setActor(info['actor'], true);
 
             gpt.promptCallback(function (prompt) {
                 if (parent.Main.coms['mqtt'].failure) {
@@ -218,12 +199,8 @@
                     '?prompt=' + encodeURIComponent(prompt) +
                     '&actor=' + carousel.actor;
                 wholeMsg = '';
-                genCode = '';
-                isCode = false;
-                _codeType = -1; // -1:none , 0:python , 1:flow
-                //console.log("prompt callback:", prompt);
                 app.publish(carousel.actor + ":" + prompt);
-                gpt.start(carousel.actor);
+                gpt.start(carousel.img);
                 parent.markdown.setText("");
             });
         }

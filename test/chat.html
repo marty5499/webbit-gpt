@@ -4,8 +4,6 @@
 <head>
     <meta charset="utf-8">
     <title>WebBit-GPT</title>
-    <!-- Pyodide -->
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js"></script>
     <!-- MQTT -->
     <script src="https://cdn.jsdelivr.net/npm/mqtt@2.18.3/dist/mqtt.min.js"></script>
     <!-- Google Font Material Icon -->
@@ -16,7 +14,6 @@
     <script type="module" src="coms/wa-splitter.js"></script>
     <script type="module" src="coms/wa-menubar.js"></script>
     <script type="module" src="coms/wa-md.js"></script>
-    <script type="module" src="coms/wa-flow.js"></script>
 
 </head>
 
@@ -30,7 +27,7 @@
                 <iframe src="html/gptbot.html" frameborder="0" style="width:100%;height: calc(100% - 40px);"></iframe>
             </div>
         </div>
-        <wa-splitter left="40%"></wa-splitter>
+        <wa-splitter left="30%"></wa-splitter>
         <div id="right-frame">
             <div id='c2' class="container">
                 <wa-md id="markdown"></wa-md>
