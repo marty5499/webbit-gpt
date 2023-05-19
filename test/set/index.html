@@ -26,31 +26,40 @@
                 <br>
                 <input id='aiMemo' type="text" placeholder="小書僮描述" value="">
                 <br>
-                <input id='aiImg' type="text" placeholder="小書僮圖片連結" value="">
+                <input id='aiImg' type="text" placeholder="小書僮圖片 320x240 連結 " value="">
                 <br>
-                <input id='aiFolderURL' type="text" placeholder="雲端硬碟目錄連結" value="">
+                <input id='aiFolderURL' type="text" placeholder="Google 雲端硬碟目錄連結" value="">
             </div>
             <br><br>
             <div id="msg" style="height:80px;width:200px;font-size:1.5em"></div>
             <br>
-            <button id="create" class='create-button' onclick="create()">建立</button>
+            <button id="btn" class='create-button' onclick="create()">建立</button>
         </div>
     </div>
 
     <script>
+
+        //*/ test
+        aiName.value = "Marty";
+        aiMemo.value = "我的小書僮";
+        aiImg.value = 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png';
+        aiFolderURL.value = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE'
+        //*/
+
+        function disableBtn() {
+            btn.disabled = true;
+            btn.classList.remove('create-button');
+            btn.classList.add('create-button-disable');
+
+        }
+
         function create() {
+            disableBtn();
             var msg = document.getElementById('msg');
             var aiName = document.getElementById('aiName').value;
             var aiMemo = document.getElementById('aiMemo').value;
             var aiImg = document.getElementById('aiImg').value;
             var aiFolderURL = document.getElementById('aiFolderURL').value;
-
-            /*/ test
-            aiName = "Marty";
-            aiMemo = "我的小書僮";
-            aiImg = 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png';
-            aiFolderURL = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE'
-            //*/
 
             var url = 'https://chat.nodered.vip/api/create?' +
                 'srcFolderURL=' + aiFolderURL +
@@ -73,8 +82,8 @@
                     mqtt.subscribe(respTopic, function (mqttMsg) {
                         msg.innerHTML = mqttMsg;
                         if (mqttMsg == '處理完成') {
-                            msg.innerHTML = 
-                            '<a href="../chat#guest?actor=' + aiName + '">開啟小書僮</a>';
+                            msg.innerHTML =
+                                '<a href="../chat#guest?actor=' + aiName + '">開啟小書僮</a>';
                         }
                     });
                 })
