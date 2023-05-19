@@ -25,11 +25,12 @@
         }
 
         .quiz-panel {
-            height: calc(240px);
+            height: calc(340px);
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
+            margin: 5px;
         }
 
         .chat-panel {
@@ -57,11 +58,10 @@
 </head>
 
 <body>
-
     <div id="gptbot-content">
         <div class="quiz-panel">
             <img id='aiImg' src="https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png"
-                width="100%">
+                width="100%" style="margin:5px">
         </div>
         <div class="chat-panel">
             <wa-gpt-bot id="gpt"></wa-gpt-bot>
