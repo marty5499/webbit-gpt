@@ -199,6 +199,7 @@
                     '?prompt=' + encodeURIComponent(prompt) +
                     '&actor=' + carousel.actor;
                 wholeMsg = '';
+                voice.clear();
                 app.publish(carousel.actor + ":" + prompt);
                 gpt.start(carousel.img);
                 parent.markdown.setText("");

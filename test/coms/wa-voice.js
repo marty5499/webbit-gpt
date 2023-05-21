@@ -119,6 +119,10 @@ class SpeechRecognition extends LitElement {
     }
   }
 
+  clear(){
+    this.result = '';
+  }
+
   updateResult(txt) {
     this.result = txt;
   }

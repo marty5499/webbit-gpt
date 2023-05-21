@@ -81,9 +81,9 @@
                     msg.innerHTML = "匯入知識集...";
                     mqtt.subscribe(respTopic, function (mqttMsg) {
                         msg.innerHTML = mqttMsg;
-                        if (mqttMsg == '處理完成') {
+                        if (mqttMsg.indexOf("true ") == 0) {
                             msg.innerHTML =
-                                '<a href="../chat#guest?actor=' + aiName + '">開啟小書僮</a>';
+                                '<a href="../chat.html#guest?actor=' + aiName + '">開啟小書僮</a>';
                         }
                     });
                 })
