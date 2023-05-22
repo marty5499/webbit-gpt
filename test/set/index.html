@@ -56,10 +56,10 @@
         function create() {
             disableBtn();
             var msg = document.getElementById('msg');
-            var aiName = document.getElementById('aiName').value;
-            var aiMemo = document.getElementById('aiMemo').value;
-            var aiImg = document.getElementById('aiImg').value;
-            var aiFolderURL = document.getElementById('aiFolderURL').value;
+            var aiName = document.getElementById('aiName').value.trim();
+            var aiMemo = document.getElementById('aiMemo').value.trim();
+            var aiImg = document.getElementById('aiImg').value.trim();
+            var aiFolderURL = document.getElementById('aiFolderURL').value.trim();
 
             var url = 'https://chat.nodered.vip/api/create?' +
                 'srcFolderURL=' + aiFolderURL +
