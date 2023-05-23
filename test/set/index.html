@@ -50,8 +50,8 @@
         var aiMemo = document.getElementById('aiMemo').value;
         var aiImg = document.getElementById('aiImg').value;
         var aiFolderURL = document.getElementById('aiFolderURL').value;
-
         var aiNameInput = document.getElementById('aiName');
+        
         function normalizeString(str) {
             return str.normalize('NFKD');
         }
@@ -92,7 +92,6 @@
                     console.error(error);
                 });
         }
-
 
         function disableBtn() {
             btn.disabled = true;
