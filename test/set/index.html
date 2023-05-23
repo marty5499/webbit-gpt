@@ -31,35 +31,83 @@
                 <input id='aiFolderURL' type="text" placeholder="Google 雲端硬碟目錄連結" value="">
             </div>
             <br><br>
-            <div id="msg" style="height:80px;width:200px;font-size:1.5em"></div>
+            <div id="msg" style="height:80px;width:200px;font-size:1.2em"></div>
             <br>
             <button id="btn" class='create-button' onclick="create()">建立</button>
         </div>
     </div>
 
     <script>
-
-        //*/ test
-        aiName.value = "Marty";
+        /*/ test
+        aiName.value = "";
         aiMemo.value = "我的小書僮";
         aiImg.value = 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png';
         aiFolderURL.value = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE'
         //*/
 
+        var msg = document.getElementById('msg');
+        var aiName = document.getElementById('aiName').value;
+        var aiMemo = document.getElementById('aiMemo').value;
+        var aiImg = document.getElementById('aiImg').value;
+        var aiFolderURL = document.getElementById('aiFolderURL').value;
+
+        var aiNameInput = document.getElementById('aiName');
+        function normalizeString(str) {
+            return str.normalize('NFKD');
+        }
+
+        function isValidInput(str) {
+            var regex = /^[\p{L}\p{N}]+$/u; // 允許Unicode字母和數字
+            return regex.test(str);
+        }
+
+        aiNameInput.addEventListener('input', async function () {
+            var inputValue = aiNameInput.value;
+            if (inputValue.length == 0) return;
+            var normalizedInput = normalizeString(inputValue);
+            if (!isValidInput(normalizedInput)) {
+                aiNameInput.value = '';
+                alert('只允許中文、英文大小寫和數字');
+            } else {
+                if (await checkNameExists(aiNameInput.value)) {
+                    alert('名字重複');
+                    aiNameInput.value = '';
+                }
+            }
+        });
+
+        function checkNameExists(name) {
+            var url = 'https://chat.nodered.vip/api/hasActor?name=' + encodeURIComponent(name);
+            return fetch(url)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('網路錯誤，無法判斷');
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    return data;
+                })
+                .catch(function (error) {
+                    console.error(error);
+                });
+        }
+
+
         function disableBtn() {
             btn.disabled = true;
             btn.classList.remove('create-button');
             btn.classList.add('create-button-disable');
+        }
 
+        function enableBtn() {
+            btn.disabled = false;
+            btn.classList.add('create-button');
+            btn.classList.remove('create-button-disable');
         }
 
         function create() {
             disableBtn();
-            var msg = document.getElementById('msg');
-            var aiName = document.getElementById('aiName').value;
-            var aiMemo = document.getElementById('aiMemo').value;
-            var aiImg = document.getElementById('aiImg').value;
-            var aiFolderURL = document.getElementById('aiFolderURL').value;
 
             var url = 'https://chat.nodered.vip/api/create?' +
                 'srcFolderURL=' + aiFolderURL +
