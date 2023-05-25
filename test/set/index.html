@@ -38,18 +38,12 @@
     </div>
 
     <script>
-        /*/ test
-        aiName.value = "";
-        aiMemo.value = "我的小書僮";
-        aiImg.value = 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png';
-        aiFolderURL.value = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE'
+        //*/ test
+        document.getElementById('aiName').value = "我的小書僮";
+        document.getElementById('aiMemo').value = "我的小書僮";
+        document.getElementById('aiImg').value = 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png';
+        //document.getElementById('aiFolderURL').value = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE'
         //*/
-
-        var msg = document.getElementById('msg');
-        var aiName = document.getElementById('aiName').value;
-        var aiMemo = document.getElementById('aiMemo').value;
-        var aiImg = document.getElementById('aiImg').value;
-        var aiFolderURL = document.getElementById('aiFolderURL').value;
         var aiNameInput = document.getElementById('aiName');
         
         function normalizeString(str) {
@@ -107,6 +101,12 @@
 
         function create() {
             disableBtn();
+            var msg = document.getElementById('msg');
+            var aiName = document.getElementById('aiName').value;
+            var aiMemo = document.getElementById('aiMemo').value;
+            var aiImg = document.getElementById('aiImg').value;
+            var aiFolderURL = document.getElementById('aiFolderURL').value;
+            var aiNameInput = document.getElementById('aiName');
 
             var url = 'https://chat.nodered.vip/api/create?' +
                 'srcFolderURL=' + aiFolderURL +
@@ -116,7 +116,6 @@
                 "&aiFolderURL=" + aiFolderURL;
 
             msg.innerHTML = "建立中...";
-
             fetch(url, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
