@@ -45,7 +45,7 @@
         //document.getElementById('aiFolderURL').value = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE'
         //*/
         var aiNameInput = document.getElementById('aiName');
-        
+
         function normalizeString(str) {
             return str.normalize('NFKD');
         }
@@ -126,6 +126,7 @@
                     var respTopic = data['respTopic'];
                     msg.innerHTML = "匯入知識集...";
                     mqtt.subscribe(respTopic, function (mqttMsg) {
+                        console.log("mqttMsg:", mqttMsg);
                         msg.innerHTML = mqttMsg;
                         if (mqttMsg.indexOf("true ") == 0) {
                             msg.innerHTML =
