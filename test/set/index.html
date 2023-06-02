@@ -40,10 +40,10 @@
     <script>
 
         //*/ test
-        aiName.value = "Marty";
-        aiMemo.value = "我的小書僮";
+        aiName.value = "我是範例";
+        aiMemo.value = "範例小書僮";
         aiImg.value = 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png';
-        aiFolderURL.value = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE'
+        aiFolderURL.value = 'https://drive.google.com/drive/u/0/folders/15TYIANBu5Y0h8kj18ASY9sGMBm7xk0oE';
         //*/
 
         function disableBtn() {
@@ -81,9 +81,9 @@
                     msg.innerHTML = "匯入知識集...";
                     mqtt.subscribe(respTopic, function (mqttMsg) {
                         msg.innerHTML = mqttMsg;
-                        if (mqttMsg == '處理完成') {
+                        if (mqttMsg.trim().indexOf("true ") == 0) {
                             msg.innerHTML =
-                                '<a href="../chat#guest?actor=' + aiName + '">開啟小書僮</a>';
+                                '<a href="../chat.html#guest?actor=' + aiName + '">開啟小書僮</a>';
                         }
                     });
                 })
