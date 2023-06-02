@@ -128,11 +128,7 @@
                     mqtt.subscribe(respTopic, function (mqttMsg) {
                         console.log("mqttMsg:", mqttMsg);
                         msg.innerHTML = mqttMsg;
-<<<<<<< HEAD
-                        if (mqttMsg.indexOf("true ") == 0) {
-=======
                         if (mqttMsg.trim().indexOf("true ") == 0) {
->>>>>>> bio
                             msg.innerHTML =
                                 '<a href="../chat.html#guest?actor=' + aiName + '">開啟小書僮</a>';
                         }
