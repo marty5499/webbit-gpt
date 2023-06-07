@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bootstrap Panel Example with CSS Effects</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    .custom-panel {
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-top: 20px;
+      width: 320px;
+      height: 340px; 
+      float: left;
+      margin-right: 20px;
+    }
+
+    .custom-panel .panel-heading {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .custom-panel .panel-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .custom-panel .panel-body {
+      padding-top: 20px;
+    }
+
+    .custom-panel .panel-body img {
+      max-width: 100%;
+      height: 200px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="panelContainer">
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script>
+    fetch('https://chat.nodered.vip/api/actors')
+      .then(response => response.json())
+      .then(data => {
+        const panelContainer = document.getElementById('panelContainer');
+        
+        data.forEach(actor => {
+          const panel = document.createElement('div');
+          panel.className = 'panel custom-panel';
+
+          const panelHeading = document.createElement('div');
+          panelHeading.className = 'panel-heading';
+          const panelTitle = document.createElement('h3');
+          panelTitle.className = 'panel-title';
+          panelTitle.textContent = actor.name;
+          panelHeading.appendChild(panelTitle);
+          panel.appendChild(panelHeading);
+
+          const panelBody = document.createElement('div');
+          panelBody.className = 'panel-body';
+          const panelImage = document.createElement('img');
+          panelImage.src = actor.img;
+          panelImage.style['width'] = '300px';
+          panelImage.style['height'] = '150px';
+          panelImage.alt = 'Panel Image';
+          panelBody.appendChild(panelImage);
+
+          const panelMemo = document.createElement('p');
+          panelMemo.textContent = actor.memo;
+          panelBody.appendChild(panelMemo);
+
+          const openButton = document.createElement('a');
+          openButton.href = `https://chat.nodered.vip/api/bio/test/chat.html#guest?actor=${actor.name}`;
+          openButton.target = '_blank';
+          openButton.className = 'btn btn-primary';
+          openButton.textContent = '開啟';
+          openButton.style['float'] = 'right';
+          panelBody.appendChild(openButton);
+
+          panel.appendChild(panelBody);
+
+          panelContainer.appendChild(panel);
+        });
+      });
+  </script>
+</body>
+</html>
