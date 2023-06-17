@@ -57,6 +57,7 @@
       margin: 5px;
       display: block;
     }
+
     .logo {
       margin: 5px;
       float: left;
@@ -78,9 +79,14 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
   <script>
     function createBtn(href, target, className, textContent, float) {
-      const btn = document.createElement('a');
-      btn.href = href;
-      btn.target = target;
+      var btn;
+      if (href != null) {
+        btn = document.createElement('a');
+        btn.href = href;
+        btn.target = target;
+      } else {
+        btn = document.createElement('button');
+      }
       btn.className = className;
       btn.textContent = textContent;
       btn.style['float'] = float;
@@ -123,11 +129,19 @@
 
           var href = `https://chat.nodered.vip/api/bio/test/chat.html#guest?actor=${actor.name}`
           panelBody.appendChild(createBtn(href, '_blank', 'btn btn-primary', 'Open', 'left'));
-          var href = `https://drive.google.com/drive/u/0/folders/${actor.folder}`
-          panelBody.appendChild(createBtn(href, '_blank', 'btn btn-primary', '資料夾', 'left'));
-          var href = `${actor.qa}`
-          panelBody.appendChild(createBtn(href, '_blank', 'btn btn-primary', '編輯', 'left'));
-
+          var href = `./test/actorEdit.html#${actor.name}`
+          panelBody.appendChild(createBtn(href, '_self', 'btn btn-primary', '編輯', 'left'));
+          var eleDeleteBtn = createBtn(null, '_self', 'btn btn-danger', '刪除', 'left');
+          panelBody.appendChild(eleDeleteBtn);
+          eleDeleteBtn.addEventListener('click', function () {
+            console.log('delete');
+            fetch(`https://chat.nodered.vip/api/actor/delete?name=${actor.name}`)
+              .then(response => response.json())
+              .then(data => {
+                console.log(data);
+                location.reload();
+              });
+          });
           panel.appendChild(panelBody);
           panelContainer.appendChild(panel);
         });
