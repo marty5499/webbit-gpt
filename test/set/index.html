@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <title>Create AI</title>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./set/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
-    <script src="./mqttapp.js"></script>
+    <script src="./set/mqttapp.js"></script>
 </head>
 
 <body>
@@ -71,7 +71,7 @@
         });
 
         function checkNameExists(name) {
-            var url = 'https://chat.nodered.vip/api/hasActor?name=' + encodeURIComponent(name);
+            var url = 'https://chat.nodered.vip/api/actor/check?name=' + encodeURIComponent(name);
             return fetch(url)
                 .then(function (response) {
                     if (!response.ok) {
