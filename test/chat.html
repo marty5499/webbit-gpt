@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>WebBit-GPT</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <!-- MQTT -->
     <script src="https://cdn.jsdelivr.net/npm/mqtt@2.18.3/dist/mqtt.min.js"></script>
     <!-- Google Font Material Icon -->
@@ -18,8 +19,12 @@
 </head>
 
 <body>
-    <wa-menubar id="menubar">
-    </wa-menubar>
+    <div class="menuBar">
+        <img class="logo" src="https://chat.webduino.io/webduino_logo.svg">
+        <div class="title">伴學小書僮</div>
+        <button style='float:right;margin:5px' class="btn btn-primary"
+            onclick="window.location.href = document.referrer">回首頁</button>
+    </div>
 
     <div id="app-content">
         <div id='left-frame'>
