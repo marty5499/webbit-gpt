@@ -13,6 +13,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
 
 <head>
     <title>我的小書僮</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -147,6 +148,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
     <div class="menuBar">
         <img class="logo" src="https://chat.webduino.io/webduino_logo.svg">
         <div class="title">伴學小書僮</div>
+        <button style='float:right;margin:5px' class="btn btn-primary" onclick="window.location.href='index.html'">回首頁</button>
     </div>
     <div class="container" id="panelContainer">
         <div class="h1">
@@ -250,6 +252,10 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             return actorInfo;
         }
 
+        function openGoogleDrive() {
+            window.open(actorInfo['gdrive']);
+        }
+
         function postActorInfo(action) {
             const url = 'https://chat.nodered.vip/api/actor/' + action; // 替換為你的 API 網址
             if (action == 'retrain') {
@@ -290,13 +296,9 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         */
         var actorInfo = {};
 
-        function openGoogleDrive() {
-            window.open(actorInfo['gdrive']);
-        }
-
         eleActorName.textContent = decodeURI(actorName);
         eleActorLink.href = 'https://chat.nodered.vip/api/bio/test/chat.html#guest?actor=' + actorName;
-        fetch('https://chat.nodered.vip/api/actor?name=' + actorName)
+        fetch('https://chat.nodered.vip/api/actor/query?name=' + actorName)
             .then(response => response.json())
             .then(data => {
                 actorInfo = data;
