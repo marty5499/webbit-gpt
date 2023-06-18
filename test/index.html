@@ -94,10 +94,10 @@
     }
 
     const menuBar = document.getElementsByClassName('menuBar')[0];
-    var href = `https://chat.nodered.vip/api/bio/test/set/`
+    var href = `./set/index.html`
     menuBar.appendChild(createBtn(href, '_blank', 'btn btn-primary', '建立小書僮', 'right'));
 
-    fetch('https://chat.nodered.vip/api/actors')
+    fetch('https://chat.nodered.vip/api/actor/list')
       .then(response => response.json())
       .then(data => {
         const panelContainer = document.getElementById('panelContainer');
@@ -129,19 +129,25 @@
 
           var href = `https://chat.nodered.vip/api/bio/test/chat.html#guest?actor=${actor.name}`
           panelBody.appendChild(createBtn(href, '_blank', 'btn btn-primary', 'Open', 'left'));
-          var href = `./test/actorEdit.html#${actor.name}`
+          var href = `./actorEdit.html#${actor.name}`
           panelBody.appendChild(createBtn(href, '_self', 'btn btn-primary', '編輯', 'left'));
           var eleDeleteBtn = createBtn(null, '_self', 'btn btn-danger', '刪除', 'left');
           panelBody.appendChild(eleDeleteBtn);
           eleDeleteBtn.addEventListener('click', function () {
-            console.log('delete');
-            fetch(`https://chat.nodered.vip/api/actor/delete?name=${actor.name}`)
-              .then(response => response.json())
-              .then(data => {
-                console.log(data);
-                location.reload();
-              });
+            var confirmDelete = confirm('是否确定要删除？');
+            if (confirmDelete) {
+              console.log('delete');
+              fetch(`https://chat.nodered.vip/api/actor/delete?name=${actor.name}`)
+                .then(response => response.json())
+                .then(data => {
+                  console.log(data);
+                  location.reload();
+                });
+            } else {
+              console.log('取消删除');
+            }
           });
+
           panel.appendChild(panelBody);
           panelContainer.appendChild(panel);
         });
