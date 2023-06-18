@@ -104,6 +104,13 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             width: 100%;
             height: 50px;
             background: linear-gradient(90.29deg, #00AE97 10.12%, #225584 86.63%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f5f5f5;
+            box-sizing: border-box;
+            z-index: 999;
         }
 
         .title {
@@ -148,11 +155,13 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
     <div class="menuBar">
         <img class="logo" src="https://chat.webduino.io/webduino_logo.svg">
         <div class="title">伴學小書僮</div>
-        <button style='float:right;margin:5px' class="btn btn-primary" onclick="window.location.href='index.html'">回首頁</button>
+        <button style='float:right;margin:5px' class="btn btn-primary"
+            onclick="window.location.href = document.referrer">回首頁</button>
     </div>
+    <br><br>
     <div class="container" id="panelContainer">
         <div class="h1">
-            <div id="actorName"></div><a style="font-size: 0.7em" id="actorLink" href="">[Open]</a>
+            <div id="actorName"></div><a style="font-size: 0.5em" id="actorLink" href="">[Open]</a>
         </div>
         <div class="tabs">
             <div class="tab active" onclick="changeTab('settings')">設定</div>
@@ -163,6 +172,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         <div id="settings" class="content" style="display: block;">
             <textarea id="description" class="actor-memo" placeholder="小書僮描述"></textarea>
             <div class="image-container">
+                <input type="text" style="width: 320px;" id="imageUrlInput" placeholder="輸入圖片網址"><br>
                 <img src="" id="image" class="actor-image" alt="圖片">
             </div>
             <button class="saveBtn" onclick="postActorInfo('update')">儲存</button>
@@ -287,6 +297,17 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         var elePrompt = document.getElementById('prompt');
         var eleDescription = document.getElementById('description');
         var eleRetrainMsg = document.getElementById('retran-msg');
+        const imageUrlInput = document.getElementById('imageUrlInput');
+        const imageElement = document.getElementById('image');
+
+        imageUrlInput.addEventListener('input', function () {
+            const imageUrl = imageUrlInput.value;
+            const img = new Image();
+            img.onload = function () {
+                imageElement.src = imageUrl;
+            };
+            img.src = imageUrl;
+        });
         /*
             gdrive: "..."
             img: "..."
