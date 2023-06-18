@@ -162,7 +162,7 @@
 
         // 
         function updateActor(name) {
-            var url = 'https://chat.nodered.vip/api/actor?name=' + name;
+            var url = 'https://chat.nodered.vip/api/actor/query?name=' + name;
             fetch(url, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
