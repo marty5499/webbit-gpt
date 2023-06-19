@@ -326,7 +326,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
                 var q = question.value;
                 var a = answer.value;
                 if (q != "" && a != "") {
-                    data.push([q + ' ' + a, a]);
+                    data.push([q , a]);
                 }
             }
             actorInfo['qaList'] = JSON.stringify(data);
