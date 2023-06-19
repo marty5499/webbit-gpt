@@ -242,6 +242,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
                         var container = document.getElementById("qa-container");
                         var panel = template.children[0].cloneNode(true);
                         container.appendChild(panel);
+                        return panel;
                     }
                     // 刪除問答面板，從容器中移除該面板
                     function deletePanel(button) {
@@ -325,10 +326,10 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
                 var q = question.value;
                 var a = answer.value;
                 if (q != "" && a != "") {
-                    data.push([q, a]);
+                    data.push([q + ' ' + a, a]);
                 }
             }
-            actorInfo['qaList'] = data;
+            actorInfo['qaList'] = JSON.stringify(data);
             postActorInfo('retrain');
         }
 
@@ -404,6 +405,14 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
                 eleActorImage.src = data.img;
                 elePrompt.value = data.prompt;
                 eleDescription.value = data.memo;
+                var qaList = data.qaList;
+                for (var i = 0; i < qaList.length; i++) {
+                    var panel = addPanel();
+                    var question = panel.getElementsByClassName("question")[0];
+                    var answer = panel.getElementsByClassName("answer")[0];
+                    question.value = qaList[i][0];
+                    answer.value = qaList[i][1];
+                }
                 console.log(data);
             });
     </script>
