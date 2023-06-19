@@ -152,7 +152,6 @@
           eleDeleteBtn.addEventListener('click', function () {
             var confirmDelete = confirm('是否确定要删除？');
             if (confirmDelete) {
-              console.log('delete');
               fetch(`https://chat.nodered.vip/api/actor/delete?name=${actor.name}`)
                 .then(response => response.json())
                 .then(data => {
