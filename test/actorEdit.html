@@ -148,6 +148,45 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             margin: 0 auto;
             display: inline-flex;
         }
+
+        /* 定義新增按鈕的顏色 */
+        .add-button {
+            background-color: green;
+            color: #f0f0f0;
+        }
+
+        /* 定義儲存按鈕的顏色 */
+        .save-button {
+            background-color: blue;
+            color: #f0f0f0;
+        }
+
+        /* 定義刪除按鈕的顏色 */
+        .delete-button {
+            background-color: red;
+            color: #f0f0f0;
+        }
+
+        /* 定義問答面板的樣式 */
+        .panel {
+            display: flex;
+            margin: 10px;
+        }
+
+        /* 定義問題和答案的樣式 */
+        .question,
+        .answer {
+            width: 42%;
+            height: 3em;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        /* 定義刪除按鈕的大小 */
+        .delete-button {
+            width: 10%;
+            height: 50px;
+        }
     </style>
 </head>
 
@@ -185,7 +224,33 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
                 <button class="saveBtn" onclick="retrain()">再訓練</button>
                 <div id="retran-msg">Ready</div>
             </div>
+            <div id="qaList">
+                <button class="button add-button" onclick="addPanel()">新增</button>
+                <div id="qa-container"></div>
+                <div id="qa-template" style="display:none">
+                    <div class="panel">
+                        <textarea class="question" placeholder="請輸入問題"></textarea>
+                        <textarea class="answer" placeholder="請輸入答案"></textarea>
+                        <button class="button delete-button" onclick="deletePanel(this)">刪除</button>
+                    </div>
+                </div>
 
+                <script>
+                    // 新增問答面板，從模板複製一個新的面板，並加入到容器中
+                    function addPanel() {
+                        var template = document.getElementById("qa-template");
+                        var container = document.getElementById("qa-container");
+                        var panel = template.children[0].cloneNode(true);
+                        container.appendChild(panel);
+                    }
+                    // 刪除問答面板，從容器中移除該面板
+                    function deletePanel(button) {
+                        var container = document.getElementById("qa-container");
+                        var panel = button.parentNode;
+                        container.removeChild(panel);
+                    }
+                </script>
+            </div>
         </div>
 
         <div id="advanced" class="content">
@@ -251,6 +316,19 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         }
 
         function retrain() {
+            var container = document.getElementById("qa-container");
+            var data = [];
+            for (var i = 0; i < container.children.length; i++) {
+                var panel = container.children[i];
+                var question = panel.getElementsByClassName("question")[0];
+                var answer = panel.getElementsByClassName("answer")[0];
+                var q = question.value;
+                var a = answer.value;
+                if (q != "" && a != "") {
+                    data.push([q, a]);
+                }
+            }
+            actorInfo['qaList'] = data;
             postActorInfo('retrain');
         }
 
