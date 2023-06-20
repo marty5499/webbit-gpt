@@ -78,28 +78,6 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             margin-bottom: 10px;
         }
 
-        .temperature {
-            display: inline-block;
-            width: 100%;
-            height: 20px;
-            background-color: lightgray;
-            position: relative;
-        }
-
-        .temperature-thumb {
-            width: 20px;
-            height: 100%;
-            background-color: gray;
-            cursor: pointer;
-            position: absolute;
-            top: 0;
-        }
-
-        .temperature-value {
-            text-align: center;
-            margin-top: 10px;
-        }
-
         .menuBar {
             width: 100%;
             height: 50px;
@@ -187,6 +165,10 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             width: 10%;
             height: 50px;
         }
+
+        .temperature-slider {
+            width: 200px;
+        }
     </style>
 </head>
 
@@ -255,22 +237,18 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         </div>
 
         <div id="advanced" class="content">
+            Condense:
+            <textarea id="condense" style="height:150px" placeholder="Prompt"></textarea>
+            Prompt:
             <textarea id="prompt" class="prompt" placeholder="Prompt"></textarea>
-            <div class="scrollbar">
-                <div class="temperature" onmousemove="updateTemperature(event)" onmousedown="startDrag(event)"
-                    onmouseup="stopDrag()">
-                    <div class="temperature-thumb" id="thumb"></div>
-                </div>
-            </div>
-            <div class="temperature-value" id="temperatureValue">50</div>
+            回答溫度：<span id="temperature-value">0</span>
+            <input type="range" id="temperatureSlider" class="temperature-slider" min="0" max="100">
             <button class="saveBtn" onclick="postActorInfo('update')">儲存</button>
         </div>
 
     </div>
 
     <script>
-        let isDragging = false;
-
         function changeTab(tabName) {
             const tabs = document.getElementsByClassName('tab');
             const contents = document.getElementsByClassName('content');
@@ -292,30 +270,6 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             const images = tabContent.getElementsByTagName('img');
         }
 
-        function updateTemperature(event) {
-            if (isDragging) {
-                const scrollbar = document.querySelector('.scrollbar');
-                const temperature = document.querySelector('.temperature');
-                const thumb = document.getElementById('thumb');
-                const temperatureValue = document.getElementById('temperatureValue');
-
-                const mouseX = event.clientX - scrollbar.getBoundingClientRect().left;
-                const percentage = (mouseX / scrollbar.offsetWidth) * 100;
-                const value = Math.round((percentage / 100) * 100);
-
-                thumb.style.left = percentage + '%';
-                temperatureValue.textContent = value;
-            }
-        }
-
-        function startDrag(event) {
-            isDragging = true;
-        }
-
-        function stopDrag() {
-            isDragging = false;
-        }
-
         function retrain() {
             var container = document.getElementById("qa-container");
             var data = [];
@@ -334,10 +288,12 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         }
 
         function updateActorInfo() {
+            actorInfo['condense'] = eleCondense.value;
             actorInfo['prompt'] = elePrompt.value;
             actorInfo['memo'] = eleDescription.value;
             actorInfo['name'] = eleActorName.textContent;
             actorInfo['img'] = eleActorImage.src;
+            actorInfo['temp'] = parseInt(temperatureSlider.value) / 50.0;
             return actorInfo;
         }
 
@@ -374,8 +330,10 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         var eleActorLink = document.getElementById('actorLink');
         var eleActorImage = document.getElementById('image');
         var elePrompt = document.getElementById('prompt');
+        var eleCondense = document.getElementById('condense');
         var eleDescription = document.getElementById('description');
         var eleRetrainMsg = document.getElementById('retran-msg');
+        var eleTemp = document.getElementById('temperatureValue');
         const imageUrlInput = document.getElementById('imageUrlInput');
         const imageElement = document.getElementById('image');
 
@@ -387,15 +345,16 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             };
             img.src = imageUrl;
         });
-        /*
-            gdrive: "..."
-            img: "..."
-            memo: "Webduino在智慧農業的運用"
-            name: "智慧農業"
-            prompt : "You"
-        */
-        var actorInfo = {};
 
+        var temperatureSlider = document.getElementById("temperatureSlider");
+        var temperatureValue = document.getElementById("temperature-value");
+        temperatureSlider.value = 0;
+        temperatureSlider.addEventListener("input", function () {
+            var value = parseInt(temperatureSlider.value);
+            temperatureValue.innerHTML = value;
+        });
+
+        var actorInfo = {};
         eleActorName.textContent = decodeURI(actorName);
         eleActorLink.href = 'https://chat.nodered.vip/api/bio/test/chat.html#guest?actor=' + actorName;
         fetch('https://chat.nodered.vip/api/actor/query?name=' + actorName)
@@ -405,6 +364,9 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
                 eleActorImage.src = data.img;
                 elePrompt.value = data.prompt;
                 eleDescription.value = data.memo;
+                eleCondense.value = data.condense;
+                temperatureSlider.value = parseFloat(data.temp) * 50;
+                temperatureValue.innerHTML = temperatureSlider.value;
                 var qaList = data.qaList;
                 for (var i = 0; i < qaList.length; i++) {
                     var panel = addPanel();
