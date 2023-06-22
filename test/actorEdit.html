@@ -169,13 +169,24 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         .temperature-slider {
             width: 200px;
         }
+
+
+        .home {
+            width: 100%;
+        }
+        .home:hover {
+            opacity: 0.9;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
     <div class="menuBar">
-        <img class="logo" src="https://chat.webduino.io/webduino_logo.svg">
-        <div class="title">伴學小書僮</div>
+        <div class="home" onclick="window.location.href = document.referrer">
+            <img class="logo" src="https://chat.webduino.io/webduino_logo.svg">
+            <div class="title">伴學小書僮</div>
+        </div>
         <button style='float:right;margin:5px' class="btn btn-primary"
             onclick="window.location.href = document.referrer">回首頁</button>
     </div>
