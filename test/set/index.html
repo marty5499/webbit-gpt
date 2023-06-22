@@ -35,6 +35,13 @@
     </div>
 
     <script>
+        var WEB_HOST;
+        if (location.hostname != 'localhost') {
+            WEB_HOST = 'https://' + location.hostname
+        } else {
+            WEB_HOST = 'https://chat.nodered.vip';
+        }
+
         aiMemo.style['display'] = 'none';
         aiImg.style['display'] = 'none';
         //*/ test
@@ -70,7 +77,7 @@
         });
 
         function checkNameExists(name) {
-            var url = 'https://chat.nodered.vip/api/actor/check?name=' + encodeURIComponent(name);
+            var url = WEB_HOST + '/api/actor/check?name=' + encodeURIComponent(name);
             return fetch(url)
                 .then(function (response) {
                     if (!response.ok) {
@@ -107,7 +114,7 @@
             var aiFolderURL = document.getElementById('aiFolderURL').value;
             var aiNameInput = document.getElementById('aiName');
 
-            var url = 'https://chat.nodered.vip/api/actor/create?' +
+            var url = WEB_HOST + '/api/actor/create?' +
                 'srcFolderURL=' + aiFolderURL +
                 '&aiName=' + aiName +
                 '&aiMemo=' + aiMemo +
