@@ -73,6 +73,13 @@
     </div>
 
     <script>
+        var WEB_HOST;
+        if (location.hostname != 'localhost') {
+            WEB_HOST = 'https://' + location.hostname
+        } else {
+            WEB_HOST = 'https://chat.nodered.vip';
+        }
+
         var wholeMsg = '';
         const textarea = document.getElementById('show');
         const voice = document.getElementById('voice');
@@ -162,7 +169,7 @@
 
         // 
         function updateActor(name) {
-            var url = 'https://chat.nodered.vip/api/actor/query?name=' + name;
+            var url = WEB_HOST + '/api/actor/query?name=' + name;
             fetch(url, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
