@@ -91,6 +91,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
   <script>
+    var WEB_HOST = 'https://chat.nodered.vip';
+    WEB_HOST = 'https://aitsky.nodered.vip';
+
     function createBtn(href, target, className, textContent, float) {
       var btn;
       if (href != null) {
@@ -110,7 +113,7 @@
     var href = `./set/index.html`
     menuBar.appendChild(createBtn(href, '_blank', 'btn btn-primary', '建立小書僮', 'right'));
 
-    fetch('https://chat.nodered.vip/api/actor/list?user=public')
+    fetch(WEB_HOST + '/api/actor/list?user=public')
       .then(response => response.json())
       .then(data => {
         const panelContainer = document.getElementById('panelContainer');
@@ -152,7 +155,7 @@
           eleDeleteBtn.addEventListener('click', function () {
             var confirmDelete = confirm('是否确定要删除？');
             if (confirmDelete) {
-              fetch(`https://chat.nodered.vip/api/actor/delete?name=${actor.name}`)
+              fetch(WEB_HOST + `/api/actor/delete?name=${actor.name}`)
                 .then(response => response.json())
                 .then(data => {
                   console.log(data);
