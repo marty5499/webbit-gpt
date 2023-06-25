@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+    <!-- MQTT -->
+    <script src="../js/mqttapp.js"></script>
+    <script src="../js/cookie.js"></script>
+    <!-- Google Font Material Symbol -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap">
+    <script type="module" src="../coms/wa-select-prompt.js"></script>
+    <script type="module" src="../coms/wa-voice.js"></script>
+    <script type="module" src="../coms/wa-gpt-bot.js"></script>
+
+    <style>
+        :root {
+            height: 100%;
+        }
+
+        body {
+            margin: 0px;
+            height: 100%;
+        }
+
+        .quiz-panel {
+            height: calc(250px);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+        }
+
+        .chat-panel {
+            margin: 5px;
+            height: calc(70vh - 100px);
+            background-color: #eee;
+        }
+
+        .menuBar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 46px;
+        }
+
+        .menuBtn {
+            float: left;
+            margin: 5px;
+        }
+
+        #gptbot-content {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gptbot-content">
+        <div class="quiz-panel">
+            <img id='aiImg' src="https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png"
+                width="100%" style="margin:5px">
+        </div>
+        <div class="chat-panel">
+            <wa-gpt-bot id="gpt"></wa-gpt-bot>
+            <br>
+            <div class="menuBar">
+                <wa-voice id='voice' class='menuBtn' callback="voiceToTextarea"></wa-voice>
+                <wa-gpt-btn id="sendBtn" class='menuBtn' callback="send"></wa-gpt-btn>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var WEB_HOST;
+        if (location.hostname != 'localhost') {
+            WEB_HOST = 'https://' + location.hostname
+        } else {
+            WEB_HOST = 'https://chat.nodered.vip';
+        }
+
+        var wholeMsg = '';
+        const textarea = document.getElementById('show');
+        const voice = document.getElementById('voice');
+        const carousel = { actor: '' };
+        const cookie = new Cookie(2);
+
+        function voiceToTextarea(str) {
+            if (str.trim() == '') return;
+            gpt.prompt(str);
+        }
+
+        function appendToShow(msg, isEnd) {
+            if (isEnd) {
+                var uuid = msg.split('\n\n$UUID$')[1];
+                if (typeof (uuid) != "undefined") {
+                    msg = msg.split('\n\n$UUID$')[0];
+                    gpt.setUUID(uuid);
+                }
+                gpt.wholeMsg = wholeMsg + msg;
+                parent.markdown.setText(msg);
+                gpt.setEnable(true);
+                gpt.done();
+            } else {
+                if (msg == '') return;
+                wholeMsg = wholeMsg + "\n" + msg;
+                var cnt = gpt.read();
+                cnt = cnt + msg + "<br>";
+                gpt.write(cnt);
+            }
+        }
+
+        function isUrlEncoded(str) {
+            try {
+                decodeURIComponent(str);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function parseURL(str) {
+            if (str.indexOf('#') < 0 || str.indexOf('#?') > 0) {
+                str = cookie.get('userId');
+                //str = str == '' ? '' : str;
+                if (str == '') {
+                    throw "userId not found!";
+                }
+                if (parent.location.href.indexOf('?') > 0) {
+                    var data = parent.location.href.split('?');
+                    parent.location.href = data[0] + '#' + str + '?' + data[1];
+                }
+            }
+            var result = { 'prompt': '', 'actor': '' };
+            var userId = '';
+            var hashIndex = str.indexOf('#');
+            var questionIndex = str.indexOf('?');
+
+            if (hashIndex !== -1) {
+                if (questionIndex !== -1) {
+                    userId = str.slice(hashIndex + 1, questionIndex);
+                } else {
+                    userId = str.slice(hashIndex + 1);
+                }
+                cookie.set('userId', userId);
+            } else {
+                if (questionIndex !== -1) {
+                    userId = '';
+                } else {
+                    userId = str;
+                }
+            }
+
+            result.userId = userId == '' ? '' : userId;
+            if (questionIndex !== -1) {
+                var params = str.slice(questionIndex + 1).split('&');
+                for (var i = 0; i < params.length; i++) {
+                    var parts = params[i].split('=');
+                    result[parts[0]] = decodeURIComponent(parts[1].replace(/\+/g, ' '));
+                }
+            }
+            carousel.actor = result['actor'];
+            return result;
+        }
+
+        var info = parseURL(parent.location.href);
+        const app = new MQTTApp(info['userId'] + "_" + Math.random());
+
+        // 
+        function updateActor(name) {
+            var url = WEB_HOST + '/api/actor/query?name=' + name;
+            fetch(url, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    carousel.img = data['img'];
+                    aiImg.src = carousel.img;
+                    console.log("resp:", data);
+                })
+                .catch(error => {
+                    console.error('發生錯誤:', error);
+                });
+        }
+
+        async function init() {
+            updateActor(carousel.actor);
+            parent.Main.registry("gpt", gpt);
+            parent.Main.registry("voice", voice);
+            parent.Main.registry("markdown", parent.markdown);
+            gpt.setMQTT(app);
+            gpt.prompt(info['prompt']);
+            await app.init(appendToShow);
+            gpt.setEnable(true);
+
+            gpt.promptCallback(function (prompt) {
+                if (parent.Main.coms['mqtt'].failure) {
+                    alert('連線中斷，請重新整理網頁');
+                }
+                gpt.setEnable(false);
+                parent.location.hash =
+                    '#' + info['userId'] +
+                    '?prompt=' + encodeURIComponent(prompt) +
+                    '&actor=' + carousel.actor;
+                wholeMsg = '';
+                voice.clear();
+                app.publish(carousel.actor + ":" + prompt);
+                gpt.start(carousel.img);
+                parent.markdown.setText("");
+            });
+        }
+    </script>
+</body>
+
+</html>

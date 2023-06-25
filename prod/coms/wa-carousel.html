@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="module" src="./wa-carousel.js"></script>
+    <style>
+        body {
+            margin: 100px
+        }
+    </style>
+</head>
+
+<body>
+    <div style="width:320px;height:320px;border:1px #FFAC55 solid;overflow: hidden">
+        <wa-carousel id="carousel"></wa-carousel>
+    </div>
+    <script>
+        setTimeout(function () {
+            var carousel = document.getElementById('carousel');
+            carousel.select(function (idx, name) {
+                console.log(idx,name);
+            });
+        }, 500);
+    </script>
+</body>
+
+</html>
