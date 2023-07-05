@@ -200,6 +200,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             <div class="tab active" onclick="changeTab('settings')">設定</div>
             <div class="tab" onclick="changeTab('data')">資料管理</div>
             <div class="tab" onclick="changeTab('advanced')">進階設定</div>
+            <div class="tab" onclick="changeTab('docView')">文件檢視</div>
         </div>
 
         <div id="settings" class="content" style="display: block;">
@@ -256,6 +257,10 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             回答溫度：<span id="temperature-value">0</span>
             <input type="range" id="temperatureSlider" class="temperature-slider" min="0" max="100">
             <button class="saveBtn" onclick="postActorInfo('update')">儲存</button>
+        </div>
+
+        <div id="docView" class="content">
+            <iframe id='docFrame' style="width:100%;height:300px"></iframe>
         </div>
 
     </div>
@@ -350,7 +355,9 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         var eleTemp = document.getElementById('temperatureValue');
         const imageUrlInput = document.getElementById('imageUrlInput');
         const imageElement = document.getElementById('image');
-
+        const docFrame = document.getElementById('docFrame');
+        docFrame.src = WEB_HOST + '/api/actor/admin?name=' + actorName;
+        
         imageUrlInput.addEventListener('input', function () {
             const imageUrl = imageUrlInput.value;
             const img = new Image();
