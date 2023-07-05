@@ -377,7 +377,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
 
         var actorInfo = {};
         eleActorName.textContent = decodeURI(actorName);
-        eleActorLink.href = WEB_HOST + '/api/bio/test/chat.html#guest?actor=' + actorName;
+        eleActorLink.href = WEB_HOST + '/api/chatdoc/test/chat.html#guest?actor=' + actorName;
         fetch(WEB_HOST + '/api/actor/query?name=' + actorName)
             .then(response => response.json())
             .then(data => {
