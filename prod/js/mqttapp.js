@@ -11,11 +11,14 @@ class MQTTApp {
             userName: 'webduino', password: 'webduino'
         };
         this.onConnectPromise = null;
-        this.subscriptions = {}; // 存儲訂閱關係的對象
-        var topic = "@aitsky";
+        this.subscriptions = {}; // 存儲訂閱關係的對象  
+        var topic = "kn@chat"; // test目錄連結測試機
+        if (location.hostname != "localhost") {
+            topic = "kn@" + location.hostname.split(".")[0];
+        }
         this.pubTopic = topic + '_prompt/' + userId;
-        this.respTopic_cb = topic + "_completion/" + this.userId;
-        this.respTopic_end = topic + "_completion_end/" + this.userId;
+        this.respTopic_cb = topic + "_completion/" + userId;
+        this.respTopic_end = topic + "_completion_end/" + userId;
         this.failure = false;
     }
 
@@ -25,7 +28,6 @@ class MQTTApp {
             cb(msg, false);
         });
         this.subscribe(this.respTopic_end, function (msg) {
-            console.log("=============================");
             cb(msg, true);
         });
     }
@@ -56,6 +58,24 @@ class MQTTApp {
         console.log("Published message: " + msg);
     }
 
+    // MQTT message publish function
+    async publishTopic(topic, msg) {
+        var pubTopic = topic + '_prompt/' + this.userId;
+        //var respTopic_cb = topic + "_completion/" + userId;
+        var respTopic_end = topic + "_completion_end/" + this.userId;
+        var self = this;
+        return new Promise((resolve) => {
+            self.subscribe(respTopic_end, (subMsg) => {
+                self.client.unsubscribe(respTopic_end);
+                delete self.subscriptions[respTopic_end];
+                resolve(subMsg);
+            });
+            var payload = new Paho.Message(msg);
+            payload.destinationName = pubTopic;
+            this.client.send(payload);
+        });
+    }
+
     // MQTT message subscribe function
     subscribe(topic, onMessageReceived) {
         if (!this.subscriptions[topic]) {
@@ -63,7 +83,7 @@ class MQTTApp {
                 onMessageReceived: onMessageReceived
             };
             this.client.subscribe(topic);
-            console.log(`Subscribed to topic: ${topic}`);
+            //console.log(`Subscribed to topic: ${topic}`);
         } else {
             console.warn(`Already subscribed to topic: ${topic}`);
         }
