@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <!-- Pyodide -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js"></script>
+
+    <!-- MQTT -->
+    <script src="https://cdn.jsdelivr.net/npm/mqtt@2.18.3/dist/mqtt.min.js"></script>
+
+    <!-- Lit elements -->
+    <script type="module" src="./wa-menubar.js"></script>
+    <script type="module" src="./wa-run-python.js"></script>
+    <script type="module" src="./wa-ai-chat-dialog.js"></script>
+    <style>
+        body {
+            margin: 0
+        }
+    </style>
+    <script>
+        class Main { }
+    </script>
+</head>
+
+<body>
+    <wa-menubar id="menubar">
+        <wa-run-python id='runPython' console="output"></wa-run-python>
+        <wa-ai-chat-dialog>詢問</wa-ai-chat-dialog>
+    </wa-menubar>
+</body>
+
+</html>

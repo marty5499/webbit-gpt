@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Create AI</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+    <script src="./mqttapp.js"></script>
+</head>
+
+<body>
+    <div class="box-form">
+        <div class="left">
+            <div class="overlay">
+                <h2>我的小書僮</h2>
+                <p>建立屬於您的小書僮，幫您讀書，解答您的問題...</p>
+            </div>
+        </div>
+        <div class="right">
+            <h1>建立</h1>
+            <p>powered by Webduino</p>
+            <div class="inputs">
+                <input id='aiName' type="text" placeholder="小書僮名字" value="">
+                <input id='aiMemo' type="text" placeholder="小書僮描述" value="">
+                <input id='aiImg' type="text" placeholder="小書僮圖片 320x240 連結 " value="">
+                <input id='aiFolderURL' type="text" placeholder="Google 雲端硬碟目錄連結" value="">
+            </div>
+            <br><br>
+            <div id="msg" style="height:80px;width:200px;font-size:1.2em"></div>
+            <br>
+            <button id="btn" class='create-button' onclick="create()">建立</button>
+        </div>
+    </div>
+
+    <script>
+        var WEB_HOST;
+        if (location.hostname != 'localhost') {
+            WEB_HOST = 'https://' + location.hostname
+        } else {
+            WEB_HOST = 'https://chat.nodered.vip';
+        }
+
+        aiMemo.style['display'] = 'none';
+        aiImg.style['display'] = 'none';
+        //*/ test
+        aiName.value = "";
+        aiMemo.value = "這是小書僮的說明...";
+        aiImg.value = 'https://md.webduino.io/uploads/upload_9de4c14d7a91ee5d8282ceaf0116f6f0.png';
+        aiFolderURL.value = '';
+        //*/
+        var aiNameInput = document.getElementById('aiName');
+
+        function normalizeString(str) {
+            return str.normalize('NFKD');
+        }
+
+        function isValidInput(str) {
+            var regex = /^[\p{L}\p{N}]+$/u; // 允許Unicode字母和數字
+            return regex.test(str);
+        }
+
+        aiNameInput.addEventListener('input', async function () {
+            var inputValue = aiNameInput.value;
+            if (inputValue.length == 0) return;
+            var normalizedInput = normalizeString(inputValue);
+            if (!isValidInput(normalizedInput)) {
+                aiNameInput.value = '';
+                alert('只允許中文、英文大小寫和數字');
+            } else {
+                if (await checkNameExists(aiNameInput.value)) {
+                    alert('名字重複');
+                    aiNameInput.value = '';
+                }
+            }
+        });
+
+        function checkNameExists(name) {
+            var url = WEB_HOST + '/api/actor/check?name=' + encodeURIComponent(name);
+            return fetch(url)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('網路錯誤，無法判斷');
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    return data;
+                })
+                .catch(function (error) {
+                    console.error(error);
+                });
+        }
+
+        function disableBtn() {
+            btn.disabled = true;
+            btn.classList.remove('create-button');
+            btn.classList.add('create-button-disable');
+        }
+
+        function enableBtn() {
+            btn.disabled = false;
+            btn.classList.add('create-button');
+            btn.classList.remove('create-button-disable');
+        }
+
+        function create() {
+            disableBtn();
+            var msg = document.getElementById('msg');
+            var aiName = document.getElementById('aiName').value;
+            var aiMemo = document.getElementById('aiMemo').value;
+            var aiImg = document.getElementById('aiImg').value;
+            var aiFolderURL = document.getElementById('aiFolderURL').value;
+            var aiNameInput = document.getElementById('aiName');
+
+            var url = WEB_HOST + '/api/actor/create?' +
+                'srcFolderURL=' + aiFolderURL +
+                '&aiName=' + aiName +
+                '&aiMemo=' + aiMemo +
+                '&aiImg=' + aiImg +
+                "&aiFolderURL=" + aiFolderURL;
+
+            msg.innerHTML = "建立中...";
+            fetch(url, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("resp:", data);
+                    var respTopic = data['respTopic'];
+                    msg.innerHTML = "匯入知識集...";
+                    mqtt.subscribe(respTopic, function (mqttMsg) {
+                        console.log("mqttMsg:", mqttMsg);
+                        msg.innerHTML = mqttMsg;
+                        if (mqttMsg.trim().indexOf("true ") == 0) {
+                            msg.innerHTML =
+                                '<a href="../chat.html#guest?actor=' + aiName + '">開啟小書僮</a>';
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('發生錯誤:', error);
+                });
+        }
+        var mqtt = new MQTTApp("" + Math.random());
+        mqtt.connect();
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,404 @@
+<!--
+產生一個 html 檔案 , 根據下面描述產生對應的 html,css,js程式碼
+1. 用<h1>顯示 我的小書僮
+2. 產生三個頁籤 [設定] [資料管理] [進階設定]
+3. 點選 [設定] 有1個 textarea 是 "小書僮描述" , 另1個是 320 x 240 的圖片
+4. 點選 [資料管理] 顯示 "Google雲端硬碟" , 旁邊有一個按鈕 [Open] , 點選後開啟 Google雲端硬碟
+5. 點選 [進階設定] 有1個 textarea 是 "Prompt" , 下面有一個橫向捲軸 寬度是300px , 名稱是"溫度",數值 0~100 ,預設是50 , 可以左右拖拉改變數值
+6. 點選不同頁籤就會切換顯示的內容
+https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
+-->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>我的小書僮</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tabs {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .tab {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: lightgray;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background-color: gray;
+            color: white;
+        }
+
+        .content {
+            display: none;
+            padding: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .image-container {
+            text-align: center;
+        }
+
+        .actor-image {
+            width: 320px;
+            height: 240px;
+            object-fit: contain;
+        }
+
+        .data-management {
+            text-align: center;
+        }
+
+        .data-management-text {
+            margin-bottom: 10px;
+        }
+
+        .advanced-settings {
+            text-align: center;
+        }
+
+        .scrollbar {
+            width: 300px;
+            overflow-x: scroll;
+            white-space: nowrap;
+            margin-bottom: 10px;
+        }
+
+        .menuBar {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(90.29deg, #00AE97 10.12%, #225584 86.63%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f5f5f5;
+            box-sizing: border-box;
+            z-index: 999;
+        }
+
+        .title {
+            font-size: 1.6em;
+            color: #f0f0f0;
+            float: left;
+            margin: 5px;
+            display: block;
+        }
+
+        .logo {
+            margin: 5px;
+            float: left;
+            height: 40px;
+        }
+
+        .prompt {
+            height: 300px;
+        }
+
+        .actor-memo {
+            height: 150px;
+        }
+
+        .saveBtn {
+            display: block;
+            margin: 5px auto;
+
+        }
+
+        .h1 {
+            text-align: center;
+            padding: 20px;
+            font-size: 2em;
+            margin: 0 auto;
+            display: inline-flex;
+        }
+
+        /* 定義新增按鈕的顏色 */
+        .add-button {
+            background-color: green;
+            color: #f0f0f0;
+        }
+
+        /* 定義儲存按鈕的顏色 */
+        .save-button {
+            background-color: blue;
+            color: #f0f0f0;
+        }
+
+        /* 定義刪除按鈕的顏色 */
+        .delete-button {
+            background-color: red;
+            color: #f0f0f0;
+        }
+
+        /* 定義問答面板的樣式 */
+        .panel {
+            display: flex;
+            margin: 10px;
+        }
+
+        /* 定義問題和答案的樣式 */
+        .question,
+        .answer {
+            width: 42%;
+            height: 3em;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        /* 定義刪除按鈕的大小 */
+        .delete-button {
+            width: 10%;
+            height: 50px;
+        }
+
+        .temperature-slider {
+            width: 200px;
+        }
+
+
+        .home {
+            width: 100%;
+        }
+
+        .home:hover {
+            opacity: 0.9;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="menuBar">
+        <div class="home" onclick="window.location.href = document.referrer">
+            <img class="logo" src="https://chat.webduino.io/webduino_logo.svg">
+            <div class="title">伴學小書僮</div>
+        </div>
+        <button style='float:right;margin:5px' class="btn btn-primary"
+            onclick="window.location.href = document.referrer">回首頁</button>
+    </div>
+    <br><br>
+    <div class="container" id="panelContainer">
+        <div class="h1">
+            <div id="actorName"></div><a style="font-size: 0.5em" id="actorLink" href="">[Open]</a>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="changeTab('settings')">設定</div>
+            <div class="tab" onclick="changeTab('data')">資料管理</div>
+            <div class="tab" onclick="changeTab('advanced')">進階設定</div>
+            <div class="tab" onclick="changeTab('docView')">文件檢視</div>
+        </div>
+
+        <div id="settings" class="content" style="display: block;">
+            <textarea id="description" class="actor-memo" placeholder="小書僮描述"></textarea>
+            <div class="image-container">
+                <input type="text" style="width: 320px;" id="imageUrlInput" placeholder="輸入圖片網址"><br>
+                <img src="" id="image" class="actor-image" alt="圖片">
+            </div>
+            <button class="saveBtn" onclick="postActorInfo('update')">儲存</button>
+        </div>
+
+        <div id="data" class="content">
+            <div class="data-management">
+                <p class="data-management-text">Google雲端硬碟</p>
+                <button class="saveBtn" onclick="openGoogleDrive()">Open</button>
+                <button class="saveBtn" onclick="retrain()">再訓練</button>
+                <div id="retran-msg">Ready</div>
+            </div>
+            <div id="qaList">
+                <button class="button add-button" onclick="addPanel()">新增</button>
+                <div id="qa-container"></div>
+                <div id="qa-template" style="display:none">
+                    <div class="panel">
+                        <textarea class="question" placeholder="請輸入問題"></textarea>
+                        <textarea class="answer" placeholder="請輸入答案"></textarea>
+                        <button class="button delete-button" onclick="deletePanel(this)">刪除</button>
+                    </div>
+                </div>
+
+                <script>
+                    // 新增問答面板，從模板複製一個新的面板，並加入到容器中
+                    function addPanel() {
+                        var template = document.getElementById("qa-template");
+                        var container = document.getElementById("qa-container");
+                        var panel = template.children[0].cloneNode(true);
+                        container.appendChild(panel);
+                        return panel;
+                    }
+                    // 刪除問答面板，從容器中移除該面板
+                    function deletePanel(button) {
+                        var container = document.getElementById("qa-container");
+                        var panel = button.parentNode;
+                        container.removeChild(panel);
+                    }
+                </script>
+            </div>
+        </div>
+
+        <div id="advanced" class="content">
+            Condense:
+            <textarea id="condense" style="height:150px" placeholder="Prompt"></textarea>
+            Prompt:
+            <textarea id="prompt" class="prompt" placeholder="Prompt"></textarea>
+            回答溫度：<span id="temperature-value">0</span>
+            <input type="range" id="temperatureSlider" class="temperature-slider" min="0" max="100">
+            <button class="saveBtn" onclick="postActorInfo('update')">儲存</button>
+        </div>
+
+        <div id="docView" class="content">
+            <iframe id='docFrame' style="width:100%;height:300px"></iframe>
+        </div>
+
+    </div>
+
+    <script>
+        function changeTab(tabName) {
+            const tabs = document.getElementsByClassName('tab');
+            const contents = document.getElementsByClassName('content');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+                contents[i].style.display = 'none';
+            }
+            document.getElementById(tabName).classList.add('active');
+            document.getElementById(tabName).style.display = 'block';
+            clearTabContent(tabName);
+        }
+
+        function clearTabContent(tabName) {
+            const tabContent = document.getElementById(tabName);
+            const textareas = tabContent.getElementsByTagName('textarea');
+            const images = tabContent.getElementsByTagName('img');
+        }
+
+        function retrain() {
+            var container = document.getElementById("qa-container");
+            var data = [];
+            for (var i = 0; i < container.children.length; i++) {
+                var panel = container.children[i];
+                var question = panel.getElementsByClassName("question")[0];
+                var answer = panel.getElementsByClassName("answer")[0];
+                var q = question.value;
+                var a = answer.value;
+                if (q != "" && a != "") {
+                    data.push([q, a]);
+                }
+            }
+            actorInfo['qaList'] = data;
+            postActorInfo('retrain');
+        }
+
+        function updateActorInfo() {
+            actorInfo['condense'] = eleCondense.value;
+            actorInfo['prompt'] = elePrompt.value;
+            actorInfo['memo'] = eleDescription.value;
+            actorInfo['name'] = eleActorName.textContent;
+            actorInfo['img'] = eleActorImage.src;
+            actorInfo['temp'] = parseInt(temperatureSlider.value) / 50.0;
+            return actorInfo;
+        }
+
+        function openGoogleDrive() {
+            window.open(actorInfo['gdrive']);
+        }
+
+        function postActorInfo(action) {
+            const url = WEB_HOST + '/api/actor/' + action; // 替換為你的 API 網址
+            if (action == 'retrain') {
+                eleRetrainMsg.textContent = '開始訓練...';
+            }
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateActorInfo())
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (action == 'retrain') {
+                        eleRetrainMsg.textContent = result.state;
+                    } else if (action == 'update') {
+                        alert('儲存成功');
+                    }
+                    console.log('回傳結果：', result);
+                })
+                .catch(error => {
+                    console.error('發生錯誤：', error);
+                });
+        }
+        var WEB_HOST;
+        if (location.hostname != 'localhost') {
+            WEB_HOST = 'https://' + location.hostname
+        } else {
+            WEB_HOST = 'https://chat.nodered.vip';
+        }
+        var actorName = location.hash.substring(1);
+        var eleActorName = document.getElementById('actorName');
+        var eleActorLink = document.getElementById('actorLink');
+        var eleActorImage = document.getElementById('image');
+        var elePrompt = document.getElementById('prompt');
+        var eleCondense = document.getElementById('condense');
+        var eleDescription = document.getElementById('description');
+        var eleRetrainMsg = document.getElementById('retran-msg');
+        var eleTemp = document.getElementById('temperatureValue');
+        const imageUrlInput = document.getElementById('imageUrlInput');
+        const imageElement = document.getElementById('image');
+        const docFrame = document.getElementById('docFrame');
+        docFrame.src = WEB_HOST + '/api/actor/admin?name=' + actorName;
+        
+        imageUrlInput.addEventListener('input', function () {
+            const imageUrl = imageUrlInput.value;
+            const img = new Image();
+            img.onload = function () {
+                imageElement.src = imageUrl;
+            };
+            img.src = imageUrl;
+        });
+
+        var temperatureSlider = document.getElementById("temperatureSlider");
+        var temperatureValue = document.getElementById("temperature-value");
+        temperatureSlider.value = 0;
+        temperatureSlider.addEventListener("input", function () {
+            var value = parseInt(temperatureSlider.value);
+            temperatureValue.innerHTML = value;
+        });
+
+        var actorInfo = {};
+        eleActorName.textContent = decodeURI(actorName);
+        eleActorLink.href = WEB_HOST + '/api/chatdoc/test/chat.html#guest?actor=' + actorName;
+        fetch(WEB_HOST + '/api/actor/query?name=' + actorName)
+            .then(response => response.json())
+            .then(data => {
+                actorInfo = data;
+                eleActorImage.src = data.img;
+                elePrompt.value = data.prompt;
+                eleDescription.value = data.memo;
+                eleCondense.value = data.condense;
+                temperatureSlider.value = parseFloat(data.temp) * 50;
+                temperatureValue.innerHTML = temperatureSlider.value;
+                var qaList = data.qaList;
+                for (var i = 0; i < qaList.length; i++) {
+                    var panel = addPanel();
+                    var question = panel.getElementsByClassName("question")[0];
+                    var answer = panel.getElementsByClassName("answer")[0];
+                    question.value = qaList[i][0];
+                    answer.value = qaList[i][1];
+                }
+                console.log(data);
+            });
+    </script>
+</body>
+
+</html>
