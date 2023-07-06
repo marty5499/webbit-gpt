@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Draggable Panels Example</title>
+    <style>
+      /* Define the grid layout for the three panels */
+      .grid-container {
+        display: grid;
+        grid-template-columns: 1fr minmax(0, 2fr) 1fr;
+        grid-template-rows: 100vh;
+      }
+      /* Style the left panel */
+      .left-panel {
+        background-color: lightblue;
+        overflow: auto;
+      }
+      /* Style the middle panel */
+      .middle-panel {
+        background-color: white;
+        overflow: auto;
+      }
+      /* Style the right panel */
+      .right-panel {
+        background-color: lightgreen;
+        overflow: auto;
+      }
+      /* Style the draggable horizontal separator between the left and middle panels */
+      .horizontal-separator {
+        position: absolute;
+        z-index: 100;
+        width: 100%;
+        height: 5px;
+        background-color: grey;
+        cursor: row-resize;
+        border-top: 2px solid white;
+        border-bottom: 2px solid white;
+        margin-top: -2px;
+        margin-bottom: -2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-container">
+      <div class="left-panel">
+        <h1>Left Panel</h1>
+        <p>Some content here...</p>
+      </div>
+      <div class="middle-panel">
+        <h1>Middle Panel</h1>
+        <p>Some content here...</p>
+      </div>
+      <div class="right-panel">
+        <h1>Right Panel</h1>
+        <p>Some content here...</p>
+      </div>
+      <div class="horizontal-separator"></div>
+    </div>
+    <script>
+      const separator = document.querySelector('.horizontal-separator');
+      separator.addEventListener('mousedown', startDragging);
+      
+      function startDragging(e) {
+        e.preventDefault();
+
+        document.documentElement.addEventListener('mousemove', doDrag);
+        document.documentElement.addEventListener('mouseup', stopDragging);
+      }
+
+      function doDrag(e) {
+        e.preventDefault();
+
+        const leftPanel = document.querySelector('.left-panel');
+        const middlePanel = document.querySelector('.middle-panel');
+        const rightPanel = document.querySelector('.right-panel');
+
+        const leftPanelWidth = leftPanel.getBoundingClientRect().right - leftPanel.getBoundingClientRect().left;
+        const rightPanelWidth = rightPanel.getBoundingClientRect().right - rightPanel.getBoundingClientRect().left;
+
+        const leftPanelHeight = leftPanel.getBoundingClientRect().bottom - leftPanel.getBoundingClientRect().top;
+        const separatorTop = separator.getBoundingClientRect().top;
+        const mousePosY = e.clientY;
+        const newMiddlePanelHeight = separatorTop - mousePosY;
+
+        if (newMiddlePanelHeight >= 0) {
+          middlePanel.style.gridRow = `1 / span 1`;
+          separator.style.top = `${separatorTop - 5}px`;
+          leftPanel.style.gridTemplateRows = `minmax(0, ${newMiddlePanelHeight}px) 1fr`;
+          middlePanel.style.gridTemplateRows = `minmax(0, ${newMiddlePanelHeight}px) 1fr`;
+          rightPanel.style.gridTemplateRows = `minmax(0, ${leftPanelHeight - newMiddlePanelHeight - 5}px) 1fr`;
+          rightPanel.style.gridColumn = `3 / span 1`;
+          middlePanel.style.gridColumn = `2 / span 1`;
+          leftPanel.style.gridColumn = `1 / span 1`;
+        }
+      }
+
+      function stopDragging(e) {
+        e.preventDefault();
+
+        document.documentElement.removeEventListener('mousemove', doDrag);
+        document.documentElement.removeEventListener('mouseup', stopDragging);
+      }
+    </script>
+  </body>
+</html>
