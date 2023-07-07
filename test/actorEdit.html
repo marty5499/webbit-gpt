@@ -216,7 +216,8 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             <div class="data-management">
                 <p class="data-management-text">Google雲端硬碟</p>
                 <button class="saveBtn" onclick="openGoogleDrive()">Open</button>
-                <button class="saveBtn" onclick="retrain()">再訓練</button>
+                <button class="saveBtn" onclick="retrain(false)">再訓練</button>
+                <button class="saveBtn" onclick="retrain(true)">砍掉重練</button>
                 <div id="retran-msg">Ready</div>
             </div>
             <div id="qaList">
@@ -284,7 +285,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             const images = tabContent.getElementsByTagName('img');
         }
 
-        function retrain() {
+        function retrain(force) {
             var container = document.getElementById("qa-container");
             var data = [];
             for (var i = 0; i < container.children.length; i++) {
@@ -298,7 +299,12 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
                 }
             }
             actorInfo['qaList'] = data;
-            postActorInfo('retrain');
+            if (force) {
+                postActorInfo('force_retrain');
+            } else {
+                postActorInfo('retrain');
+            }
+
         }
 
         function updateActorInfo() {
@@ -320,6 +326,9 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             if (action == 'retrain') {
                 eleRetrainMsg.textContent = '開始訓練...';
             }
+            if (action == 'force_retrain') {
+                eleRetrainMsg.textContent = '砍掉重練...';
+            }
             fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -327,7 +336,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             })
                 .then(response => response.json())
                 .then(result => {
-                    if (action == 'retrain') {
+                    if (action == 'retrain' || action == 'force_retrain') {
                         eleRetrainMsg.textContent = result.state;
                     } else if (action == 'update') {
                         alert('儲存成功');
@@ -339,10 +348,11 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
                 });
         }
         var WEB_HOST;
-        if (location.hostname != 'localhost') {
-            WEB_HOST = 'https://' + location.hostname
+        if (location.hostname == 'localhost') {
+            //本機測試
+            WEB_HOST = 'https://chat-staging.nodered.vip';
         } else {
-            WEB_HOST = 'https://chat.nodered.vip';
+            WEB_HOST = 'https://' + location.hostname
         }
         var actorName = location.hash.substring(1);
         var eleActorName = document.getElementById('actorName');
@@ -357,7 +367,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         const imageElement = document.getElementById('image');
         const docFrame = document.getElementById('docFrame');
         docFrame.src = WEB_HOST + '/api/actor/admin?name=' + actorName;
-        
+
         imageUrlInput.addEventListener('input', function () {
             const imageUrl = imageUrlInput.value;
             const img = new Image();
