@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+    <!-- MQTT -->
+    <script src="../js/mqttapp.js"></script>
+    <!-- REPL -->
+    <script src="../js/repl.js" type="text/javascript"></script>
+
+    <script type="module" src="../coms/wa-select-prompt.js"></script>
+    <script type="module" src="../coms/wa-voice.js"></script>
+    <script type="module" src="../coms/wa-deploy-bitv2.js"></script>
+    <script type="module" src="../coms/wa-gpt-btn.js"></script>
+    <script type="module" src="../coms/wa-gpt-regen.js"></script>
+    <script type="module" src="../coms/wa-gpt-bot.js"></script>
+
+    <style>
+        body {
+            margin: 0px;
+        }
+
+        .title-content {
+            margin: 5px;
+        }
+
+        .txt-content {
+            width: calc(100% - 9px);
+            height: 90px;
+            font-size: 1.1em;
+            margin: 3px;
+            background-color: #ffd;
+        }
+
+        .title-resp {
+            margin: 10px;
+            margin-top: 20px;
+        }
+
+        .txt-response {
+            font-size: 1em;
+            margin: 6px;
+            border: 1px solid;
+            padding: 5px;
+            background-color: #ffd;
+        }
+
+        .menuBtn {
+            float: left;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gptbot-content">
+        <wa-select-prompt style="width:100%"></wa-select-prompt><br>
+        <div style="display:block;height:46px">
+            <wa-voice id='voice' class='menuBtn' callback="voiceToTextarea"></wa-voice>
+            <wa-gpt-btn id="sendBtn" class='menuBtn' callback="send"></wa-gpt-btn>
+            <wa-deploy-bitv2 id="deploy" class='menuBtn'></wa-deploy-bitv2>
+        </div>
+        <div class="title-content">
+            <div>程式需求</div>
+        </div>
+        <div class="txt-content">
+            <textarea id="show" class='txt-content' id="messageInput" cols="50"></textarea>
+        </div>
+        <div class="title-resp">GPT助手</div>
+        <div id="resp" class="txt-response">
+        </div>
+    </div>
+
+    <script>
+        var isCode = false;
+        var genCode = '';
+        const textarea = document.getElementById('show');
+        const voice = document.getElementById('voice');
+
+        function send() {
+            resp.innerHTML = '';
+            app.publish(show.value);
+        }
+
+        function voiceToTextarea(str) {
+            show.value = str;
+        }
+
+        textarea.addEventListener('keyup', () => {
+            voice.updateResult(textarea.value);
+        });
+
+        function appendToShow(str, isEnd) {
+            try {
+                setCode(str);
+            } catch (e) { }
+            if (!isCode) {
+                var cnt = resp.innerHTML;
+                cnt = cnt + str + "<br>";
+                resp.innerHTML = cnt;
+            }
+            if (isEnd) {
+                var code = parent.editor.getCode();
+                parent.editor.setCode(code);
+                sendBtn.stopShakeAnimation();
+            }
+        }
+        function setCode(code) {
+            if (code.indexOf('```') == 0 && isCode) {
+                isCode = false;
+                genCode = '';
+                return;
+            }
+            if (code.indexOf('```') == 0) {
+                isCode = true;
+                return;
+            }
+            if (!isCode) return;
+            genCode = genCode + code + '\n';
+            parent.editor.setCode(genCode); // 輸出提取結果
+        }
+        var userId = "v2";
+        if (parent.location.hash.length > 1) {
+            userId = parent.location.hash.substring(1);
+        }
+        const app = new MQTTApp(userId + "_" + Math.random());
+        (async function () {
+            await app.init(appendToShow);
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type="module" src="./wa-splitter.js"></script>
+    <style>
+        #content {
+            height: 420px;
+            width: 420px;
+        }
+
+        #b1 {
+            float: left;
+            width: 50%;
+            height: 100%;
+            background-color: aqua;
+        }
+
+        #b2 {
+            float: left;
+            width: calc(50% - 3px);
+            height: 100%;
+            background-color: antiquewhite;
+        }
+    </style>
+</head>
+
+<body>
+    左右面板捲軸拖拉測試
+    <div id="content">
+        <div id="b1"></div>
+        <wa-splitter></wa-splitter>
+        <div id="b2"></div>
+    </div>
+</body>
+
+</html>

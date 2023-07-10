@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <!-- Lit elements -->
+    <script type="module" src="./wa-gpt-bot.js"></script>
+    <style>
+        body {
+            margin: 0
+        }
+    </style>
+</head>
+
+<body>
+    <div style="width:480px;height:600px;background-color:blanchedalmond;">
+        <wa-gpt-bot id="bot"></wa-gpt-bot>
+        <script>
+            setTimeout(function () {
+                bot.start();
+                bot.write("123");
+
+
+
+            }, 1000);
+        </script>
+    </div>
+</body>
+
+</html>

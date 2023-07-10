@@ -1,0 +1,32 @@
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.draggable {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.title {
+    margin: 3px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-style: outset;
+    border: 4px solid rgb(135, 125, 125);
+    cursor: move;
+    display: none;
+    z-index: 2;
+    opacity: 0.5;
+}
+
+#startButton,
+#stopButton {
+    margin-top: 20px;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}

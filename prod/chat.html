@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>WebBit-GPT</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <!-- MQTT -->
+    <script src="https://cdn.jsdelivr.net/npm/mqtt@2.18.3/dist/mqtt.min.js"></script>
+    <!-- Google Font Material Icon -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+    <link rel="stylesheet" href="css/index.css">
+    <!-- Lit elements -->
+    <script type="module" src="coms/wa-splitter.js"></script>
+    <script type="module" src="coms/wa-menubar.js"></script>
+    <script type="module" src="coms/wa-md.js"></script>
+
+</head>
+
+<body>
+    <div class="menuBar">
+        <img class="logo" src="https://chat.webduino.io/webduino_logo.svg">
+        <div class="title">伴學小書僮</div>
+        <button style='float:right;margin:5px' class="btn btn-primary"
+            onclick="window.location.href = document.referrer">回首頁</button>
+    </div>
+
+    <div id="app-content">
+        <div id='left-frame'>
+            <div id='c1' class="container">
+                <iframe src="html/gptbot.html" frameborder="0" style="width:100%;height: calc(100%);"></iframe>
+            </div>
+        </div>
+        <wa-splitter left="30%"></wa-splitter>
+        <div id="right-frame">
+            <div id='c2' class="container">
+                <wa-md id="markdown"></wa-md>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
