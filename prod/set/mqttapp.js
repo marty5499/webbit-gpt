@@ -20,7 +20,7 @@ class MQTTApp {
             this.client.connect({
                 ...this.options,
                 onSuccess: () => {
-                    console.log('Connected to MQTT broker');
+                    console.log('Connected to MQTT broker success.');
                     resolve();
                 },
                 onFailure: (err) => {

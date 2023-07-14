@@ -36,10 +36,10 @@
 
     <script>
         var WEB_HOST;
-        if (location.hostname != 'localhost') {
-            WEB_HOST = 'https://' + location.hostname
-        } else {
+        if (location.hostname == 'localhost') {
             WEB_HOST = 'https://chat.nodered.vip';
+        } else {
+            WEB_HOST = 'https://' + location.hostname
         }
 
         aiMemo.style['display'] = 'none';

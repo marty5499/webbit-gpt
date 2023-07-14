@@ -12,7 +12,7 @@ class MQTTApp {
         };
         this.onConnectPromise = null;
         this.subscriptions = {}; // 存儲訂閱關係的對象  
-        var topic = "kn@chat"; // test目錄連結測試機
+        var topic = "kn@chat"; // 連正式機
         if (location.hostname != "localhost") {
             topic = "kn@" + location.hostname.split(".")[0];
         }

@@ -1,0 +1,102 @@
+<html>
+
+<head>
+    <style>
+        .panel-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            margin: 10px;
+        }
+
+        .panel h3 {
+            font-size: 16px;
+            margin-top: 0;
+        }
+
+        .panel div {
+            margin-bottom: 5px;
+        }
+
+        .panel img {
+            max-width: 100%;
+            height: 120px;
+            margin-bottom: 10px;
+        }
+
+        .panel div#status {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel-container"></div>
+
+    <script>
+        fetch('/api/actor/debug', {
+            method: 'GET'
+        })
+            .then(response => response.json())
+            .then(result => {
+                const panelContainer = document.querySelector('.panel-container');
+
+                for (var i in result) {
+                    var info = {
+                        'name': result[i]['name'],
+                        'memo': result[i]['memo'],
+                        'img': result[i]['img'],
+                        'msg': result[i]['status']['msg'],
+                        'status': result[i]['status'],
+                    }
+                    var panel = document.createElement('div');
+                    panel.className = 'panel';
+                    if (info['status']['state'] == 'ready') {
+                        panel.style.backgroundColor = '#eee';
+                    }
+                    if (info['status']['state'] == 'finished') {
+                        panel.style.backgroundColor = '#dfd';
+                    }
+                    if (info['status']['state'] == 'process') {
+                        panel.style.backgroundColor = '#fdd';
+                    }
+
+                    var nameElement = document.createElement('h3');
+                    nameElement.innerText = info['memo'];
+                    panel.appendChild(nameElement);
+
+                    var memoElement = document.createElement('div');
+                    memoElement.innerText = info['name'];
+                    panel.appendChild(memoElement);
+
+                    var imgElement = document.createElement('img');
+                    imgElement.src = info['img'];
+                    imgElement.width = 160;
+                    imgElement.height = 120;
+                    imgElement.alt = '';
+                    panel.appendChild(imgElement);
+
+                    var msgElement = document.createElement('div');
+                    msgElement.innerText = info['msg'];
+                    panel.appendChild(msgElement);
+
+                    var statusElement = document.createElement('div');
+                    statusElement.innerText = info['status']['state'];
+                    panel.appendChild(statusElement);
+
+                    panelContainer.appendChild(panel);
+                }
+            })
+            .catch(error => {
+                console.error('發生錯誤：', error);
+            });
+    </script>
+</body>
+
+</html>

@@ -92,10 +92,10 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
   <script>
     var WEB_HOST;
-    if (location.hostname != 'localhost') {
-      WEB_HOST = 'https://' + location.hostname
-    } else {
+    if (location.hostname == 'localhost') {
       WEB_HOST = 'https://chat.nodered.vip';
+    } else {
+      WEB_HOST = 'https://' + location.hostname;
     }
 
     function createBtn(href, target, className, textContent, float) {
@@ -114,7 +114,7 @@
     }
 
     const menuBar = document.getElementsByClassName('menuBar')[0];
-    var href = `./set/index.html`
+    var href = `./set/create.html`
     menuBar.appendChild(createBtn(href, '_blank', 'btn btn-primary', '建立小書僮', 'right'));
 
     fetch(WEB_HOST + '/api/actor/list?user=public')
