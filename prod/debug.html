@@ -40,7 +40,14 @@
     <div class="panel-container"></div>
 
     <script>
-        fetch('/api/actor/debug', {
+        var WEB_HOST;
+        if (location.hostname == 'localhost') {
+            //本機測試
+            WEB_HOST = 'https://chat.nodered.vip';
+        } else {
+            WEB_HOST = 'https://' + location.hostname
+        }
+        fetch(WEB_HOST + '/api/actor/debug', {
             method: 'GET'
         })
             .then(response => response.json())
