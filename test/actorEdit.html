@@ -370,20 +370,12 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
             .then(response => response.json())
             .then(items => {
                 var cnt = '';
-                var url = [];
                 for (var i in items) {
-                    url = [];
-                    url.push("https://");
-                    url.push(items[i].host);
-                    delete items[i].host;
-                    items[i]['file'] = items[i]['file'] + ".md";
-                    url.push("/books/docs/");
-                    var jsonStr = JSON.stringify(items[i]);
-                    var data = btoa(unescape(encodeURIComponent(jsonStr)));
-                    url.push(data);
-                    var filename = items[i]['file'];
-                    filename = filename.substring(0, filename.length - 3);
-                    var html = "<a href='" + url.join("") + "'>" + filename + "</a>"
+                    var url = "https://" +
+                        items[i]['host'] + '/index.html#' +
+                        encodeURIComponent(items[i]['ns']) + '/' +
+                        encodeURIComponent(items[i]['file']);
+                    var html = "<h3><a href='" + url + "' target='_blank'>" + items[i]['file'] + "</a>"
                     cnt += html + "<br>";
                 }
                 console.log(cnt);
