@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>文件檢視</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #frameView,
+        #frameSplit {
+            height: 100%;
+            width: 49%;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 id='title'></h2>
+    <iframe id="frameView"></iframe>
+    <iframe id="frameSplit"></iframe>
+
+    <script>
+        function createLink(folderId, docName) {
+            var jsonStr = JSON.stringify({
+                "file": docName,
+                "ns": folderId
+            });
+            var data = btoa(unescape(encodeURIComponent(jsonStr)));
+            var url = '/books/docs/' + data
+            return url;
+        }
+        var frameSplit = document.getElementById('frameSplit');
+        var frameView = document.getElementById('frameView');
+        var hash = location.hash;
+        if (hash.length != 0) {
+            var folderId = hash.split('#')[1].split('/')[0];
+            var docName = hash.split('#')[1].split('/')[1];
+            folderId = decodeURIComponent(folderId);
+            docName = decodeURIComponent(docName);
+            title.innerHTML = docName;
+            frameView.src = createLink(folderId, docName + ".md");
+            frameSplit.src = createLink(folderId, docName);
+        }
+    </script>
+</body>
+
+</html>

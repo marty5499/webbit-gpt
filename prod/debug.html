@@ -40,14 +40,7 @@
     <div class="panel-container"></div>
 
     <script>
-        var WEB_HOST;
-        if (location.hostname == 'localhost') {
-            //本機測試
-            WEB_HOST = 'https://chat.nodered.vip';
-        } else {
-            WEB_HOST = 'https://' + location.hostname
-        }
-        fetch(WEB_HOST + '/api/actor/debug', {
+        fetch('/api/actor/debug', {
             method: 'GET'
         })
             .then(response => response.json())
@@ -62,7 +55,6 @@
                         'msg': result[i]['status']['msg'],
                         'status': result[i]['status'],
                     }
-                    console.log("name:", name, " ,state:", info['status']['state']);
                     var panel = document.createElement('div');
                     panel.className = 'panel';
                     if (info['status']['state'] == 'ready') {
@@ -70,9 +62,6 @@
                     }
                     if (info['status']['state'] == 'finished') {
                         panel.style.backgroundColor = '#dfd';
-                    }
-                    if (info['status']['state'] == 'start') {
-                        panel.style.backgroundColor = '#fcc';
                     }
                     if (info['status']['state'] == 'process') {
                         panel.style.backgroundColor = '#fdd';

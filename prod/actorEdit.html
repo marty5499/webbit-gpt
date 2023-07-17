@@ -261,7 +261,7 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         </div>
 
         <div id="docView" class="content">
-            <iframe id='docFrame' style="width:100%;height:300px"></iframe>
+
         </div>
 
     </div>
@@ -366,8 +366,21 @@ https://chat.openai.com/share/24c97551-c1d6-41bc-ac83-fae69a59da5f
         var eleTemp = document.getElementById('temperatureValue');
         const imageUrlInput = document.getElementById('imageUrlInput');
         const imageElement = document.getElementById('image');
-        const docFrame = document.getElementById('docFrame');
-        docFrame.src = WEB_HOST + '/api/actor/admin?name=' + actorName;
+        fetch(WEB_HOST + '/api/actor/admin?name=' + actorName)
+            .then(response => response.json())
+            .then(items => {
+                var cnt = '';
+                for (var i in items) {
+                    var url = "https://" +
+                        items[i]['host'] + '/index.html#' +
+                        encodeURIComponent(items[i]['ns']) + '/' +
+                        encodeURIComponent(items[i]['file']);
+                    var html = "<h3><a href='" + url + "' target='_blank'>" + items[i]['file'] + "</a>"
+                    cnt += html + "<br>";
+                }
+                console.log(cnt);
+                docView.innerHTML = cnt;
+            });
 
         imageUrlInput.addEventListener('input', function () {
             const imageUrl = imageUrlInput.value;
