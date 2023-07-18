@@ -10,18 +10,22 @@
             height: 100vh;
             overflow-y: scroll;
         }
+
+        .highlight {
+            background-color: yellow;
+        }
     </style>
 </head>
 
 <body>
-    <div id="'pdfUrl" value="./book.pdf"></div>
     <div id="pdfContainer">
-        <!-- 用於顯示 PDF 的容器 -->
     </div>
-
     <!-- 引入 pdf.js 相關的 JavaScript 檔案 -->
     <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
     <script>
+        var selectedText = ""; // 用於存儲選取的文字
+        var highlightTimeout;
+
         function loadPDF() {
             var pdfUrl = './book.pdf';
             var pdfContainer = document.getElementById("pdfContainer");
@@ -93,6 +97,61 @@
 
             // Append the rendered page to the container
             pdfContainer.appendChild(pageDiv);
+
+            // Add event listener for text selection
+            textLayerDiv.addEventListener("mouseup", function (event) {
+                var selectedRange = window.getSelection().getRangeAt(0);
+                selectedText = selectedRange.toString().trim();
+                setTimeout(function () {
+                    console.log(selectedText);
+                }, 1000);
+            });
+
+            textLayerDiv.addEventListener("mouseover", function (event) {
+                if (highlightTimeout) clearTimeout(highlightTimeout);
+
+                highlightTimeout = setTimeout(function () {
+                    var target = event.target;
+
+                    // Skip if the target is not a span (i.e., not a text element)
+                    if (target.tagName.toLowerCase() !== 'span') return;
+
+                    // Remove all existing highlights
+                    var highlightedElements = document.querySelectorAll('.highlight');
+                    highlightedElements.forEach(function (element) {
+                        element.classList.remove('highlight');
+                    });
+
+                    // Get the position of the target element
+                    var targetRect = target.getBoundingClientRect();
+
+                    // Get all text elements
+                    var textElements = Array.from(textLayerDiv.getElementsByTagName('span'));
+
+                    // Function to check if an element is in the same block as the target
+                    var isInSameBlock = function (element) {
+                        var rect = element.getBoundingClientRect();
+
+                        // Check if the element is in the same line as the target
+                        // This is a simple check and might not work correctly for all PDFs
+                        return Math.abs(rect.top - targetRect.top) < rect.height * 3;
+                    };
+
+                    // Get all elements in the same block
+                    var sameBlockElements = textElements.filter(isInSameBlock);
+
+                    if (sameBlockElements.length) {
+                        console.log('Text block:', sameBlockElements.map(function (element) {
+                            return element.textContent;
+                        }).join(' '));
+
+                        // Highlight all elements in the same block
+                        sameBlockElements.forEach(function (element) {
+                            element.classList.add('highlight');
+                        });
+                    }
+                }, 1000);
+            });
         }
 
         loadPDF();
