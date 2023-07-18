@@ -5,6 +5,12 @@
     <title>PDF Viewer</title>
     <!-- 引入 pdf.js 相關的 CSS 檔案 -->
     <link rel="stylesheet" type="text/css" href="https://mozilla.github.io/pdf.js/web/viewer.css">
+    <style>
+        #pdfContainer {
+            height: 100vh;
+            overflow-y: scroll;
+        }
+    </style>
 </head>
 
 <body>
@@ -20,61 +26,73 @@
             var pdfUrl = './book.pdf';
             var pdfContainer = document.getElementById("pdfContainer");
 
-            // 初始化 PDF.js 相关设置
+            // Initialize PDF.js settings
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
 
-            // 开始载入 PDF
-            pdfjsLib.getDocument(pdfUrl).promise.then(function (pdfDoc) {
-                // 载入成功，开始渲染页面
-                for (var i = 1; i <= pdfDoc.numPages; i++) {
-                    (function (pageNum) {
-                        pdfDoc.getPage(pageNum).then(function (page) {
-                            var scale = 1;
-                            var viewport = page.getViewport({ scale: scale });
-                            var canvas = document.createElement("canvas");
-                            var context = canvas.getContext('2d');
-                            var textLayerDiv = document.createElement("div");
-
-                            // Set up text layer
-                            textLayerDiv.className = "textLayer";
-                            textLayerDiv.style.width = canvas.style.width;
-                            textLayerDiv.style.height = canvas.style.height;
-                            textLayerDiv.style.position = 'absolute';
-
-                            // Set scale factor CSS variable
-                            textLayerDiv.style.setProperty("--scale-factor", scale);
-
-                            // Set up the canvas
-                            canvas.width = viewport.width;
-                            canvas.height = viewport.height;
-                            canvas.style.width = viewport.width + "px";
-                            canvas.style.height = viewport.height + "px";
-                            canvas.style.position = 'absolute';
-
-                            // Append elements to the container
-                            pdfContainer.appendChild(canvas);
-                            pdfContainer.appendChild(textLayerDiv);
-
-                            // Render the page onto the canvas
-                            page.render({
-                                canvasContext: context,
-                                viewport: viewport
-                            }).promise.then(function () {
-                                // Retrieve the text content and render it onto the textLayer
-                                return page.getTextContent();
-                            }).then(function (textContent) {
-                                // Use textContentSource instead of textContent
-                                pdfjsLib.renderTextLayer({
-                                    textContentSource: textContent,
-                                    container: textLayerDiv,
-                                    viewport: viewport,
-                                    textDivs: []
-                                });
-                            });
-                        });
-                    })(i);
+            // Start loading the PDF
+            pdfjsLib.getDocument(pdfUrl).promise.then(async function (pdfDoc) {
+                for (var pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                    await renderPage(pdfDoc, pageNum, pdfContainer);
                 }
             });
+        }
+
+        async function renderPage(pdfDoc, pageNum, pdfContainer) {
+            const page = await pdfDoc.getPage(pageNum);
+            var scale = 1;
+            var viewport = page.getViewport({ scale: scale });
+            var canvas = document.createElement("canvas");
+            var context = canvas.getContext('2d');
+            var textLayerDiv = document.createElement("div");
+            var pageDiv = document.createElement("div");
+
+            // Set up pageDiv
+            pageDiv.style.position = 'relative';
+            pageDiv.style.width = viewport.width + "px";
+            pageDiv.style.height = viewport.height + "px";
+            pageDiv.style.marginBottom = '20px';
+
+            // Set up text layer
+            textLayerDiv.className = "textLayer";
+            textLayerDiv.style.width = "100%";
+            textLayerDiv.style.height = "100%";
+            textLayerDiv.style.position = 'absolute';
+            textLayerDiv.style.top = "0";
+            textLayerDiv.style.left = "0";
+            textLayerDiv.style.setProperty("--scale-factor", scale);
+
+            // Set up the canvas
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            canvas.style.position = 'absolute';
+            canvas.style.top = "0";
+            canvas.style.left = "0";
+
+            // Append elements to the pageDiv
+            pageDiv.appendChild(canvas);
+            pageDiv.appendChild(textLayerDiv);
+
+            // Render the page onto the canvas
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+
+            // Retrieve the text content and render it onto the textLayer
+            const textContent = await page.getTextContent();
+
+            // Use textContentSource instead of textContent
+            pdfjsLib.renderTextLayer({
+                textContentSource: textContent,
+                container: textLayerDiv,
+                viewport: viewport,
+                textDivs: []
+            });
+
+            // Append the rendered page to the container
+            pdfContainer.appendChild(pageDiv);
         }
 
         loadPDF();
