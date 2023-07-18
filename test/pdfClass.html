@@ -18,7 +18,9 @@
     </style>
 </head>
 
-<body>
+<body> <button id="zoomIn">放大</button>
+    <button id="zoomOut">縮小</button>
+    <button id="fitWidth">滿版</button>
     <div id="pdfContainer">
     </div>
     <!-- Include pdf.js JavaScript files -->
@@ -31,13 +33,53 @@
             constructor(pdfUrl) {
                 this.pdfUrl = pdfUrl;
                 this.pdfContainer = document.getElementById("pdfContainer");
-
+                this.scale = 1;  // Initialize scale
                 // Initialize PDF.js settings
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+                // Listen for the scroll event
+                this.pdfContainer.addEventListener('scroll', () => {
+                    // Get all page elements
+                    const pageElements = Array.from(this.pdfContainer.children);
+                    // Find the first page element that is (partially) visible in the viewport
+                    const visiblePageElement = pageElements.find(pageElement => {
+                        const rect = pageElement.getBoundingClientRect();
+                        return rect.top >= 0 && rect.top < window.innerHeight;
+                    });
+
+                    // Update this.nowPageNum
+                    if (visiblePageElement) {
+                        this.nowPageNum = parseInt(visiblePageElement.id.split('-')[1]);
+                        console.log("Page:", this.nowPageNum);
+                    }
+                });
+
+            }
+
+            async zoomIn() {
+                this.scale += 0.2;
+                await this.load();  // Re-load the PDF after changing the scale
+            }
+
+            async zoomOut() {
+                this.scale -= 0.2;
+                await this.load();  // Re-load the PDF after changing the scale
+            }
+
+            async fitWidth() {
+                // Get the first page
+                const page = await this.pdfDoc.getPage(1);
+                // Get the viewport for the page at scale 1
+                const unscaledViewport = page.getViewport({ scale: 1 });
+                // Calculate the scale necessary to fit the page width to the container width
+                this.scale = this.pdfContainer.clientWidth / unscaledViewport.width;
+                // Re-load the PDF
+                await this.load();
             }
 
             async load() {
                 try {
+                    this.pdfContainer.innerHTML = '';
                     // Start loading the PDF
                     const pdfDoc = await pdfjsLib.getDocument(this.pdfUrl).promise;
                     this.pdfDoc = pdfDoc; // Save the pdfDoc
@@ -84,7 +126,12 @@
                 }
             }
 
+            nowPage() {
+                return this.nowPageNum;
+            }
+
             page(pageNum) {
+                this.nowPageNum = pageNum;
                 // Scroll to the specified page
                 var pageDiv = document.getElementById("page-" + pageNum);
                 if (pageDiv) {
@@ -93,9 +140,9 @@
             }
 
             async renderPage(pageNum, keyword = null) {
+                console.log("load :", this.scale);
                 const page = await this.pdfDoc.getPage(pageNum);
-                var scale = 1;
-                var viewport = page.getViewport({ scale: scale });
+                var viewport = page.getViewport({ scale: this.scale });  // Use the current scale
                 var canvas = document.createElement("canvas");
                 var context = canvas.getContext('2d');
                 var textLayerDiv = document.createElement("div");
@@ -117,7 +164,7 @@
                 textLayerDiv.style.position = 'absolute';
                 textLayerDiv.style.top = "0";
                 textLayerDiv.style.left = "0";
-                textLayerDiv.style.setProperty("--scale-factor", scale);
+                textLayerDiv.style.setProperty("--scale-factor", this.scale);
 
                 // Set up the canvas
                 canvas.width = viewport.width;
@@ -211,12 +258,24 @@
             }
         }
         var pdf = new PDF('./book.pdf');
+
         ((async function () {
             await pdf.load();
-            pdf.find("正片後像");
-            //pdf.page(12);
-        })())
+            //pdf.find("正片後像");
+            //pdf.page(1);
+            document.getElementById('zoomIn').addEventListener('click', async function () {
+                pdf.zoomIn();
+            });
 
+            document.getElementById('zoomOut').addEventListener('click', async function () {
+                pdf.zoomOut();
+            });
+
+            document.getElementById('fitWidth').addEventListener('click', async function () {
+                pdf.fitWidth();
+            });
+
+        })())
     </script>
 </body>
 
