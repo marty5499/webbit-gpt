@@ -3,6 +3,7 @@
 
 <head>
     <title>PDF Viewer</title>
+    <!-- Include pdf.js CSS files -->
     <link rel="stylesheet" type="text/css" href="https://mozilla.github.io/pdf.js/web/viewer.css">
     <style>
         #pdfContainer {
@@ -11,7 +12,8 @@
         }
 
         .highlight {
-            background-color: yellow;
+            color: brown;
+            background-color: rgb(33, 20, 205);
         }
     </style>
 </head>
@@ -19,30 +21,78 @@
 <body>
     <div id="pdfContainer">
     </div>
+    <!-- Include pdf.js JavaScript files -->
     <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
     <script>
-        var pdfContainer = document.getElementById("pdfContainer");
+        var selectedText = ""; // To store selected text
+        var highlightTimeout;
 
         class PDF {
-            constructor(url) {
-                this.url = url;
-                this.pdfDoc = null;
-                this.currentPage = 1;
-                this.highlightTimeout = null; // Add this line
+            constructor(pdfUrl) {
+                this.pdfUrl = pdfUrl;
+                this.pdfContainer = document.getElementById("pdfContainer");
+
+                // Initialize PDF.js settings
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
             }
 
             async load() {
-                this.pdfDoc = await pdfjsLib.getDocument(this.url).promise;
-                await this.renderPage(this.currentPage);
+                try {
+                    // Start loading the PDF
+                    const pdfDoc = await pdfjsLib.getDocument(this.pdfUrl).promise;
+                    this.pdfDoc = pdfDoc; // Save the pdfDoc
+                    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                        await this.renderPage(pageNum);
+                    }
+                } catch (error) {
+                    // Handle any errors that occur during loading
+                    console.error('Error loading PDF:', error);
+                }
             }
 
-            async page(num) {
-                this.currentPage = num;
-                pdfContainer.innerHTML = '';  // Clear the container
-                await this.renderPage(this.currentPage);
+            async find(keyword) {
+                // Loop through each page in the PDF
+                for (let pageNum = 1; pageNum <= this.pdfDoc.numPages; pageNum++) {
+                    const page = await this.pdfDoc.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    console.log("pageNum:", pageNum, textContent);
+                    // Convert the text items to a single string
+                    const textItems = textContent.items.map(item => item.str);
+                    const pageText = textItems.join(' ');
+                    // Search for the keyword in the page text
+                    if (pageText.includes(keyword)) {
+                        console.log(">>>>", pageNum, ",find:", keyword);
+
+                        // Scroll to the page
+                        this.page(pageNum);
+
+                        // Highlight the keyword on the page
+                        var pageDiv = document.getElementById("page-" + pageNum);
+                        if (pageDiv) {
+                            var textLayerDiv = pageDiv.querySelector(".textLayer");
+                            if (textLayerDiv) {
+                                var textElements = Array.from(textLayerDiv.getElementsByTagName('span'));
+                                textElements.forEach(function (element) {
+                                    if (element.textContent.includes(keyword)) {
+                                        element.classList.add('highlight');
+                                    }
+                                });
+                            }
+                        }
+                        break;
+                    }
+                }
             }
 
-            async renderPage(pageNum) {
+            page(pageNum) {
+                // Scroll to the specified page
+                var pageDiv = document.getElementById("page-" + pageNum);
+                if (pageDiv) {
+                    pageDiv.scrollIntoView();
+                }
+            }
+
+            async renderPage(pageNum, keyword = null) {
                 const page = await this.pdfDoc.getPage(pageNum);
                 var scale = 1;
                 var viewport = page.getViewport({ scale: scale });
@@ -50,6 +100,9 @@
                 var context = canvas.getContext('2d');
                 var textLayerDiv = document.createElement("div");
                 var pageDiv = document.createElement("div");
+
+                // Set an ID for the pageDiv
+                pageDiv.id = "page-" + pageNum;
 
                 // Set up pageDiv
                 pageDiv.style.position = 'relative';
@@ -79,25 +132,26 @@
                 pageDiv.appendChild(canvas);
                 pageDiv.appendChild(textLayerDiv);
 
+                // Retrieve the text content and render it onto the textLayer
+                const textContent = await page.getTextContent();
+
                 // Render the page onto the canvas
                 await page.render({
                     canvasContext: context,
                     viewport: viewport
                 }).promise;
 
-                // Retrieve the text content and render it onto the textLayer
-                const textContent = await page.getTextContent();
-
-                // Use textContentSource instead of textContent
+                // Render the text layer
                 pdfjsLib.renderTextLayer({
                     textContentSource: textContent,
                     container: textLayerDiv,
                     viewport: viewport,
-                    textDivs: []
+                    textDivs: [],
+                    enhanceTextSelection: true,
+                    textContentStream: true
                 });
-
                 // Append the rendered page to the container
-                pdfContainer.appendChild(pageDiv);
+                this.pdfContainer.appendChild(pageDiv);
 
                 // Add event listener for text selection
                 textLayerDiv.addEventListener("mouseup", function (event) {
@@ -109,9 +163,9 @@
                 });
 
                 textLayerDiv.addEventListener("mouseover", function (event) {
-                    if (this.highlightTimeout) clearTimeout(this.highlightTimeout);
+                    if (highlightTimeout) clearTimeout(highlightTimeout);
 
-                    this.highlightTimeout = setTimeout(function () {
+                    highlightTimeout = setTimeout(function () {
                         var target = event.target;
 
                         // Skip if the target is not a span (i.e., not a text element)
@@ -153,14 +207,16 @@
                         }
                     }, 1000);
                 });
+
             }
         }
-
         var pdf = new PDF('./book.pdf');
-        pdf.load();
+        ((async function () {
+            await pdf.load();
+            pdf.find("正片後像");
+            //pdf.page(12);
+        })())
 
-        // You can now switch pages by calling:
-        // pdf.page(2);
     </script>
 </body>
 
