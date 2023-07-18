@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PDF Viewer</title>
+    <link rel="stylesheet" type="text/css" href="https://mozilla.github.io/pdf.js/web/viewer.css">
+    <style>
+        #pdfContainer {
+            height: 100vh;
+            overflow-y: scroll;
+        }
+
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="pdfContainer">
+    </div>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <script>
+        var pdfContainer = document.getElementById("pdfContainer");
+
+        class PDF {
+            constructor(url) {
+                this.url = url;
+                this.pdfDoc = null;
+                this.currentPage = 1;
+                this.highlightTimeout = null; // Add this line
+            }
+
+            async load() {
+                this.pdfDoc = await pdfjsLib.getDocument(this.url).promise;
+                await this.renderPage(this.currentPage);
+            }
+
+            async page(num) {
+                this.currentPage = num;
+                pdfContainer.innerHTML = '';  // Clear the container
+                await this.renderPage(this.currentPage);
+            }
+
+            async renderPage(pageNum) {
+                const page = await this.pdfDoc.getPage(pageNum);
+                var scale = 1;
+                var viewport = page.getViewport({ scale: scale });
+                var canvas = document.createElement("canvas");
+                var context = canvas.getContext('2d');
+                var textLayerDiv = document.createElement("div");
+                var pageDiv = document.createElement("div");
+
+                // Set up pageDiv
+                pageDiv.style.position = 'relative';
+                pageDiv.style.width = viewport.width + "px";
+                pageDiv.style.height = viewport.height + "px";
+                pageDiv.style.marginBottom = '20px';
+
+                // Set up text layer
+                textLayerDiv.className = "textLayer";
+                textLayerDiv.style.width = "100%";
+                textLayerDiv.style.height = "100%";
+                textLayerDiv.style.position = 'absolute';
+                textLayerDiv.style.top = "0";
+                textLayerDiv.style.left = "0";
+                textLayerDiv.style.setProperty("--scale-factor", scale);
+
+                // Set up the canvas
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                canvas.style.width = "100%";
+                canvas.style.height = "100%";
+                canvas.style.position = 'absolute';
+                canvas.style.top = "0";
+                canvas.style.left = "0";
+
+                // Append elements to the pageDiv
+                pageDiv.appendChild(canvas);
+                pageDiv.appendChild(textLayerDiv);
+
+                // Render the page onto the canvas
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+
+                // Retrieve the text content and render it onto the textLayer
+                const textContent = await page.getTextContent();
+
+                // Use textContentSource instead of textContent
+                pdfjsLib.renderTextLayer({
+                    textContentSource: textContent,
+                    container: textLayerDiv,
+                    viewport: viewport,
+                    textDivs: []
+                });
+
+                // Append the rendered page to the container
+                pdfContainer.appendChild(pageDiv);
+
+                // Add event listener for text selection
+                textLayerDiv.addEventListener("mouseup", function (event) {
+                    var selectedRange = window.getSelection().getRangeAt(0);
+                    selectedText = selectedRange.toString().trim();
+                    setTimeout(function () {
+                        console.log(selectedText);
+                    }, 1000);
+                });
+
+                textLayerDiv.addEventListener("mouseover", function (event) {
+                    if (this.highlightTimeout) clearTimeout(this.highlightTimeout);
+
+                    this.highlightTimeout = setTimeout(function () {
+                        var target = event.target;
+
+                        // Skip if the target is not a span (i.e., not a text element)
+                        if (target.tagName.toLowerCase() !== 'span') return;
+
+                        // Remove all existing highlights
+                        var highlightedElements = document.querySelectorAll('.highlight');
+                        highlightedElements.forEach(function (element) {
+                            element.classList.remove('highlight');
+                        });
+
+                        // Get the position of the target element
+                        var targetRect = target.getBoundingClientRect();
+
+                        // Get all text elements
+                        var textElements = Array.from(textLayerDiv.getElementsByTagName('span'));
+
+                        // Function to check if an element is in the same block as the target
+                        var isInSameBlock = function (element) {
+                            var rect = element.getBoundingClientRect();
+
+                            // Check if the element is in the same line as the target
+                            // This is a simple check and might not work correctly for all PDFs
+                            return Math.abs(rect.top - targetRect.top) < rect.height * 3;
+                        };
+
+                        // Get all elements in the same block
+                        var sameBlockElements = textElements.filter(isInSameBlock);
+
+                        if (sameBlockElements.length) {
+                            console.log('Text block:', sameBlockElements.map(function (element) {
+                                return element.textContent;
+                            }).join(' '));
+
+                            // Highlight all elements in the same block
+                            sameBlockElements.forEach(function (element) {
+                                element.classList.add('highlight');
+                            });
+                        }
+                    }, 1000);
+                });
+            }
+        }
+
+        var pdf = new PDF('./book.pdf');
+        pdf.load();
+
+        // You can now switch pages by calling:
+        // pdf.page(2);
+    </script>
+</body>
+
+</html>
