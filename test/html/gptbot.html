@@ -99,7 +99,27 @@
                     gpt.setUUID(uuid);
                 }
                 gpt.wholeMsg = wholeMsg + msg;
-                //parent.markdown.setText(msg);
+                var info = JSON.parse(msg);
+                console.log(info);
+                var links = "";
+                var idxLink = 1;
+                for (var i in info) {
+                    var content = info[i]['content'].split('\n');
+                    var keyword = "";
+                    for (var line in content) {
+                        console.log("content[line]:", content[line]);
+                        if (content[line].trim() != ""
+                            && !content[line].trim().startsWith('#')
+                            && !content[line].trim().startsWith('https://')) {
+                            keyword = content[line];
+                            break;
+                        }
+                    }
+                    var link = `((async function(){await parent.pdf.find('${keyword}')})())`;
+                    links += `<a href="#" onclick="${link}">${idxLink++}</a> `
+                }
+                console.log(info);
+                gpt.write(gpt.read() + `<br>${links}`);
                 gpt.setEnable(true);
                 gpt.done();
             } else {

@@ -71,38 +71,51 @@ class PDF {
     }
 
     async find(keyword) {
-        // Loop through each page in the PDF
+        let keywords = keyword.split(' ');
+    
         for (let pageNum = 1; pageNum <= this.pdfDoc.numPages; pageNum++) {
             const page = await this.pdfDoc.getPage(pageNum);
             const textContent = await page.getTextContent();
-            console.log("pageNum:", pageNum, textContent);
-            // Convert the text items to a single string
-            const textItems = textContent.items.map(item => item.str);
-            const pageText = textItems.join(' ');
-            // Search for the keyword in the page text
-            if (pageText.includes(keyword)) {
-                console.log(">>>>", pageNum, ",find:", keyword);
-
-                // Scroll to the page
+            let textItems = textContent.items.map(item => item.str);
+            let pageText = textItems.join(' ');
+    
+            if (keywords.every(kw => pageText.includes(kw))) {
                 this.page(pageNum);
-
-                // Highlight the keyword on the page
+    
                 var pageDiv = document.getElementById("page-" + pageNum);
                 if (pageDiv) {
                     var textLayerDiv = pageDiv.querySelector(".textLayer");
                     if (textLayerDiv) {
                         var textElements = Array.from(textLayerDiv.getElementsByTagName('span'));
-                        textElements.forEach(function (element) {
-                            if (element.textContent.includes(keyword)) {
-                                element.classList.add('highlight');
+    
+                        let matches = [];
+                        let matchIndex = 0;
+    
+                        for (let i = 0; i < textElements.length; i++) {
+                            if (textElements[i].textContent.includes(keywords[matchIndex])) {
+                                matches.push(textElements[i]);
+                                matchIndex++;
+    
+                                if (matchIndex >= keywords.length) {
+                                    matches.forEach(element => element.classList.add('highlight'));
+                                    matches = [];
+                                    matchIndex = 0;
+                                }
+                            } else {
+                                matches = [];
+                                matchIndex = 0;
                             }
-                        });
+                        }
                     }
                 }
                 break;
             }
         }
     }
+        
+
+
+
 
     nowPage() {
         return this.nowPageNum;
