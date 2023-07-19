@@ -5,8 +5,12 @@
     <meta charset="utf-8">
     <title>WebBit-GPT</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://mozilla.github.io/pdf.js/web/viewer.css">
+
     <!-- MQTT -->
     <script src="https://cdn.jsdelivr.net/npm/mqtt@2.18.3/dist/mqtt.min.js"></script>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <script src="./js/waPDF.js"></script>
     <!-- Google Font Material Icon -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
@@ -14,8 +18,16 @@
     <!-- Lit elements -->
     <script type="module" src="coms/wa-splitter.js"></script>
     <script type="module" src="coms/wa-menubar.js"></script>
-    <script type="module" src="coms/wa-md.js"></script>
+    <style>
+        #pdfContainer {
+            height: 100vh;
+            overflow-y: scroll;
+        }
 
+        .highlight {
+            background-color: rgb(255, 255, 122);
+        }
+    </style>
 </head>
 
 <body>
@@ -32,10 +44,15 @@
                 <iframe src="html/gptbot.html" frameborder="0" style="width:100%;height: calc(100%);"></iframe>
             </div>
         </div>
-        <wa-splitter left="30%"></wa-splitter>
+        <wa-splitter left="40%"></wa-splitter>
         <div id="right-frame">
+            <button id="zoomIn">放大</button>
+            <button id="zoomOut">縮小</button>
+            <button id="fitWidth">滿版</button>
             <div id='c2' class="container">
-                <wa-md id="markdown"></wa-md>
+
+                <div id="pdfContainer">
+                </div>
             </div>
         </div>
     </div>

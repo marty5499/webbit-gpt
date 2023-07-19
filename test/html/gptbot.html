@@ -99,7 +99,7 @@
                     gpt.setUUID(uuid);
                 }
                 gpt.wholeMsg = wholeMsg + msg;
-                parent.markdown.setText(msg);
+                //parent.markdown.setText(msg);
                 gpt.setEnable(true);
                 gpt.done();
             } else {
@@ -167,29 +167,12 @@
         var info = parseURL(parent.location.href);
         const app = new MQTTApp(info['userId'] + "_" + Math.random());
 
-        // 
-        function updateActor(name) {
-            var url = WEB_HOST + '/api/actor/query?name=' + name;
-            fetch(url, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    carousel.img = data['img'];
-                    aiImg.src = carousel.img;
-                    console.log("resp:", data);
-                })
-                .catch(error => {
-                    console.error('發生錯誤:', error);
-                });
-        }
 
         async function init() {
-            updateActor(carousel.actor);
+            //updateActor(carousel.actor);
             parent.Main.registry("gpt", gpt);
             parent.Main.registry("voice", voice);
-            parent.Main.registry("markdown", parent.markdown);
+            //parent.Main.registry("markdown", parent.markdown);
             gpt.setMQTT(app);
             gpt.prompt(info['prompt']);
             await app.init(appendToShow);
@@ -208,7 +191,6 @@
                 voice.clear();
                 app.publish(carousel.actor + ":" + prompt);
                 gpt.start(carousel.img);
-                parent.markdown.setText("");
             });
         }
     </script>

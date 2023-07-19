@@ -200,7 +200,7 @@ class ChatGPTBot extends LitElement {
     text.style.paddingTop = '10px';
     text.innerHTML = '';
     this.message = text;
-    this.setIconName(iconName);
+    //this.setIconName(iconName);
     div.appendChild(text);
 
     chatbox.appendChild(div);

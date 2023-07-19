@@ -2,10 +2,7 @@ class Main {
 
     init() {
         this.coms = {};
-        // 改成所有元件ready再初始化,不要用 setTimeout
-        setTimeout(function () {
-            window.Main.markdown = markdown;
-        }, 100);
+
     }
 
     ready(name, obj) {
@@ -40,3 +37,20 @@ class Main {
 
 window.Main = new Main();
 window.Main.init();
+var pdf = new PDF('https://kn-staging.nodered.vip/books/docs/eyJucyI6IjFXS0ZOal84MzhSNlJRVHRsa2lrXzBscjNQcG4tQjVKNSIsImZpbGUiOiJib29rLnBkZiJ9');
+((async function () {
+    await pdf.load();
+    //pdf.find("正片後像");
+    //pdf.page(1);
+    document.getElementById('zoomIn').addEventListener('click', async function () {
+        pdf.zoomIn();
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', async function () {
+        pdf.zoomOut();
+    });
+
+    document.getElementById('fitWidth').addEventListener('click', async function () {
+        pdf.fitWidth();
+    });
+})())
