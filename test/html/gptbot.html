@@ -98,6 +98,7 @@
                     msg = msg.split('\n\n$UUID$')[0];
                     gpt.setUUID(uuid);
                 }
+                console.log("end:", msg);
                 gpt.wholeMsg = wholeMsg + msg;
                 //parent.markdown.setText(msg);
                 gpt.setEnable(true);
