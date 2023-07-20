@@ -3,32 +3,22 @@ function addSpaces(text) {
 }
 
 class PDF {
-    constructor(pdfUrl) {
-        this.pdfUrl = pdfUrl;
-        //this.pdfUrl = 'https://kn-staging.nodered.vip/books/docs/eyJucyI6IjFXS0ZOal84MzhSNlJRVHRsa2lrXzBscjNQcG4tQjVKNSIsImZpbGUiOiJib29rLnBkZiJ9';
-        this.pdfContainer = document.getElementById("pdfContainer");
-        this.scale = 1;  // Initialize scale
-        this.highlightTimeout = 0;
-        this.selectedText = "";
-        // Initialize PDF.js settings
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
+    constructor() {
+        this.msgEle = null;
+    }
 
-        // Listen for the scroll event
-        this.pdfContainer.addEventListener('scroll', () => {
-            // Get all page elements
-            const pageElements = Array.from(this.pdfContainer.children);
-            // Find the first page element that is (partially) visible in the viewport
-            const visiblePageElement = pageElements.find(pageElement => {
-                const rect = pageElement.getBoundingClientRect();
-                return rect.top >= 0 && rect.top < window.innerHeight;
-            });
+    setMsgElement(ele) {
+        this.msgEle = ele;
+    }
 
-            // Update this.nowPageNum
-            if (visiblePageElement) {
-                this.nowPageNum = parseInt(visiblePageElement.id.split('-')[1]);
-                console.log("Page:", this.nowPageNum);
-            }
-        });
+    showMsg(msg1, msg2) {
+        if (typeof msg2 != undefined) {
+            msg1 = msg1 + msg2;
+        }
+        if (this.msgEle != null) {
+            this.msgEle.innerHTML = msg1;
+        }
+        console.log(msg1);
     }
 
     async zoomIn() {
@@ -52,7 +42,42 @@ class PDF {
         await this.load();
     }
 
-    async load() {
+    async load_and_find(url, keyword) {
+        if (this.pdfUrl != url) {
+            await this.load(url);
+        }
+        this.showMsg("find:[" + keyword + "]");
+        await this.find(keyword);
+    }
+
+    async load(pdfUrl) {
+        if (typeof pdfUrl == 'undefined' || pdfUrl == '') return;
+        this.showMsg("PDF loading...", pdfUrl);
+        this.pdfUrl = pdfUrl;
+        this.pdfContainer = document.getElementById("pdfContainer");
+        this.scale = 1;  // Initialize scale
+        this.highlightTimeout = 0;
+        this.selectedText = "";
+        // Initialize PDF.js settings
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+        // Listen for the scroll event
+        this.pdfContainer.addEventListener('scroll', () => {
+            // Get all page elements
+            const pageElements = Array.from(this.pdfContainer.children);
+            // Find the first page element that is (partially) visible in the viewport
+            const visiblePageElement = pageElements.find(pageElement => {
+                const rect = pageElement.getBoundingClientRect();
+                return rect.top >= 0 && rect.top < window.innerHeight;
+            });
+
+            // Update this.nowPageNum
+            if (visiblePageElement) {
+                this.nowPageNum = parseInt(visiblePageElement.id.split('-')[1]);
+                this.showMsg("Page:", this.nowPageNum);
+            }
+        });
+
         try {
             this.pdfContainer.innerHTML = '';
             // Start loading the PDF
@@ -72,20 +97,21 @@ class PDF {
             // Handle any errors that occur during loading
             console.error('Error loading PDF:', error);
         }
+        this.showMsg("PDF loading...done.");
     }
 
     async count(keyword) {
         let keywordWithoutSpaces = keyword.replace(/\s+/g, '');  // Remove all spaces from the keyword
-    
+
         let pages = [];  // Create an array to store the pages
-    
+
         for (let pageNum = 1; pageNum <= this.pdfDoc.numPages; pageNum++) {
             const page = await this.pdfDoc.getPage(pageNum);
             const textContent = await page.getTextContent();
             let textItems = textContent.items.map(item => item.str);  // Keep the spaces in the text items
             let pageText = textItems.join('');
             let pageTextWithoutSpaces = pageText.replace(/\s+/g, '');  // Remove all spaces from the page text
-    
+
             let matchIndex = 0;
             let matchStart = -1;
             let spaceBuffer = '';
@@ -94,7 +120,7 @@ class PDF {
                     spaceBuffer += ' ';
                     continue;
                 }
-    
+
                 if (pageTextWithoutSpaces[j] === keywordWithoutSpaces[matchIndex]) {
                     if (matchIndex === 0) {
                         matchStart = i;  // Save the start index of the match
@@ -105,9 +131,9 @@ class PDF {
                     matchIndex = 0;  // Reset the match index if the characters do not match
                     spaceBuffer = '';
                 }
-    
+
                 j++;
-    
+
                 if (matchIndex === keywordWithoutSpaces.length) {
                     let realKeyword = pageText.slice(matchStart, i + 1);  // Extract the real keyword from the original page text
                     pages.push([pageNum, realKeyword]);  // Add the page number and the real keyword to the array
@@ -123,23 +149,14 @@ class PDF {
 
 
     async find(keyword) {
-        let characters = Array.from(keyword);
-        let keywordWithSpaces = characters.join(' ');
-
-        let pages = [];  // Create an empty array to store the pages
-
+        let keywords = keyword.split(' ');
         for (let pageNum = 1; pageNum <= this.pdfDoc.numPages; pageNum++) {
             const page = await this.pdfDoc.getPage(pageNum);
             const textContent = await page.getTextContent();
             let textItems = textContent.items.map(item => item.str);
             let pageText = textItems.join(' ');
 
-            let matches = [];
-            let matchIndex = 0;
-
-            if (pageText.includes(keyword) || pageText.includes(keywordWithSpaces)) {
-                pages.push(pageNum);  // Add the page number to the array if a match was found
-
+            if (keywords.every(kw => pageText.includes(kw))) {
                 this.page(pageNum);
 
                 var pageDiv = document.getElementById("page-" + pageNum);
@@ -148,33 +165,29 @@ class PDF {
                     if (textLayerDiv) {
                         var textElements = Array.from(textLayerDiv.getElementsByTagName('span'));
 
-                        for (let i = 0; i < textElements.length; i++) {
-                            let currentChar = characters[matchIndex];
-                            let nextChar = characters[matchIndex + 1] || '';
-                            let combinedChars = currentChar + ' ' + nextChar;
+                        let matches = [];
+                        let matchIndex = 0;
 
-                            if (textElements[i].textContent.includes(currentChar) || textElements[i].textContent.includes(combinedChars)) {
+                        for (let i = 0; i < textElements.length; i++) {
+                            if (textElements[i].textContent.includes(keywords[matchIndex])) {
                                 matches.push(textElements[i]);
                                 matchIndex++;
-                            }
 
-                            if (i < textElements.length - 1 && textElements[i].textContent.endsWith(currentChar) && textElements[i + 1].textContent.startsWith(nextChar)) {
-                                matches.push(textElements[i]);
-                                matches.push(textElements[i + 1]);
-                                matchIndex += 2;
-                                i++;
-                            }
-
-                            if (matchIndex >= characters.length) {
-                                matches.forEach(element => element.classList.add('highlight'));
+                                if (matchIndex >= keywords.length) {
+                                    matches.forEach(element => element.classList.add('highlight'));
+                                    matches = [];
+                                    matchIndex = 0;
+                                }
+                            } else {
+                                matches = [];
+                                matchIndex = 0;
                             }
                         }
                     }
                 }
+                break;
             }
         }
-
-        return pages;  // Return the array of pages
     }
 
 
@@ -197,7 +210,8 @@ class PDF {
     }
 
     async renderPage(pageNum, keyword = null) {
-        console.log("load :", this.scale);
+        var self = this;
+        this.showMsg("load :", this.scale);
         const page = await this.pdfDoc.getPage(pageNum);
         var viewport = page.getViewport({ scale: this.scale });  // Use the current scale
         var canvas = document.createElement("canvas");
@@ -262,11 +276,12 @@ class PDF {
             var selectedRange = window.getSelection().getRangeAt(0);
             this.selectedText = selectedRange.toString().trim();
             setTimeout(function () {
-                console.log(self.selectedText);
-            }, 250);
+                self.showMsg(self.selectedText);
+            }, 1000);
         });
 
         textLayerDiv.addEventListener("mouseover", function (event) {
+            var self = this;
             if (this.highlightTimeout) clearTimeout(this.highlightTimeout);
 
             this.highlightTimeout = setTimeout(function () {
@@ -300,7 +315,7 @@ class PDF {
                 var sameBlockElements = textElements.filter(isInSameBlock);
 
                 if (sameBlockElements.length) {
-                    console.log('Text block:', sameBlockElements.map(function (element) {
+                    self.showMsg('Text block:', sameBlockElements.map(function (element) {
                         return element.textContent;
                     }).join(' '));
 
@@ -309,7 +324,7 @@ class PDF {
                         element.classList.add('highlight');
                     });
                 }
-            }, 250);
+            }, 1000);
         });
 
     }

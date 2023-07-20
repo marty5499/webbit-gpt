@@ -34,23 +34,23 @@ class Main {
         }
     }
 }
-
+var pdfUrl = 'https://kn-staging.nodered.vip/books/docs/eyJucyI6IjFXS0ZOal84MzhSNlJRVHRsa2lrXzBscjNQcG4tQjVKNSIsImZpbGUiOiJib29rLnBkZiJ9';
+pdfUrl = '';
 window.Main = new Main();
 window.Main.init();
-var pdf = new PDF('https://kn-staging.nodered.vip/books/docs/eyJucyI6IjFXS0ZOal84MzhSNlJRVHRsa2lrXzBscjNQcG4tQjVKNSIsImZpbGUiOiJib29rLnBkZiJ9');
+window.pdf = new PDF();
 ((async function () {
-    await pdf.load();
-    //pdf.find("正片後像");
-    //pdf.page(1);
+    await pdf.load(pdfUrl);
+    pdf.setMsgElement(document.getElementById('pdfMsg'))
     document.getElementById('zoomIn').addEventListener('click', async function () {
-        pdf.zoomIn();
+        window.pdf.zoomIn();
     });
 
     document.getElementById('zoomOut').addEventListener('click', async function () {
-        pdf.zoomOut();
+        window.pdf.zoomOut();
     });
 
     document.getElementById('fitWidth').addEventListener('click', async function () {
-        pdf.fitWidth();
+        window.pdf.fitWidth();
     });
 })())
