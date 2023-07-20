@@ -107,11 +107,11 @@
                     var content = info[i]['content'].split('\n');
                     var keyword = "";
                     for (var line in content) {
-                        console.log("content[line]:", content[line]);
                         if (content[line].trim() != ""
                             && !content[line].trim().startsWith('#')
                             && !content[line].trim().startsWith('https://')) {
                             keyword = content[line];
+                            console.log("keyword:", keyword);
                             break;
                         }
                     }

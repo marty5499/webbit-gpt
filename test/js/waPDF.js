@@ -1,7 +1,11 @@
+function addSpaces(text) {
+    return text.replace(/([()])/g, '$1 ');
+}
+
 class PDF {
     constructor(pdfUrl) {
         this.pdfUrl = pdfUrl;
-        this.pdfUrl = 'https://kn-staging.nodered.vip/books/docs/eyJucyI6IjFXS0ZOal84MzhSNlJRVHRsa2lrXzBscjNQcG4tQjVKNSIsImZpbGUiOiJib29rLnBkZiJ9';
+        //this.pdfUrl = 'https://kn-staging.nodered.vip/books/docs/eyJucyI6IjFXS0ZOal84MzhSNlJRVHRsa2lrXzBscjNQcG4tQjVKNSIsImZpbGUiOiJib29rLnBkZiJ9';
         this.pdfContainer = document.getElementById("pdfContainer");
         this.scale = 1;  // Initialize scale
         this.highlightTimeout = 0;
@@ -70,49 +74,111 @@ class PDF {
         }
     }
 
-    async find(keyword) {
-        let keywords = keyword.split(' ');
+    async count(keyword) {
+        let keywordWithoutSpaces = keyword.replace(/\s+/g, '');  // Remove all spaces from the keyword
     
+        let pages = [];  // Create an array to store the pages
+    
+        for (let pageNum = 1; pageNum <= this.pdfDoc.numPages; pageNum++) {
+            const page = await this.pdfDoc.getPage(pageNum);
+            const textContent = await page.getTextContent();
+            let textItems = textContent.items.map(item => item.str);  // Keep the spaces in the text items
+            let pageText = textItems.join('');
+            let pageTextWithoutSpaces = pageText.replace(/\s+/g, '');  // Remove all spaces from the page text
+    
+            let matchIndex = 0;
+            let matchStart = -1;
+            let spaceBuffer = '';
+            for (let i = 0, j = 0; i < pageText.length && j < pageTextWithoutSpaces.length; i++) {
+                if (pageText[i] === ' ') {
+                    spaceBuffer += ' ';
+                    continue;
+                }
+    
+                if (pageTextWithoutSpaces[j] === keywordWithoutSpaces[matchIndex]) {
+                    if (matchIndex === 0) {
+                        matchStart = i;  // Save the start index of the match
+                    }
+                    matchIndex++;
+                } else {
+                    matchStart = -1;
+                    matchIndex = 0;  // Reset the match index if the characters do not match
+                    spaceBuffer = '';
+                }
+    
+                j++;
+    
+                if (matchIndex === keywordWithoutSpaces.length) {
+                    let realKeyword = pageText.slice(matchStart, i + 1);  // Extract the real keyword from the original page text
+                    pages.push([pageNum, realKeyword]);  // Add the page number and the real keyword to the array
+                    break;
+                }
+            }
+        }
+        return pages;  // Return the array of pages
+    }
+
+
+
+
+
+    async find(keyword) {
+        let characters = Array.from(keyword);
+        let keywordWithSpaces = characters.join(' ');
+
+        let pages = [];  // Create an empty array to store the pages
+
         for (let pageNum = 1; pageNum <= this.pdfDoc.numPages; pageNum++) {
             const page = await this.pdfDoc.getPage(pageNum);
             const textContent = await page.getTextContent();
             let textItems = textContent.items.map(item => item.str);
             let pageText = textItems.join(' ');
-    
-            if (keywords.every(kw => pageText.includes(kw))) {
+
+            let matches = [];
+            let matchIndex = 0;
+
+            if (pageText.includes(keyword) || pageText.includes(keywordWithSpaces)) {
+                pages.push(pageNum);  // Add the page number to the array if a match was found
+
                 this.page(pageNum);
-    
+
                 var pageDiv = document.getElementById("page-" + pageNum);
                 if (pageDiv) {
                     var textLayerDiv = pageDiv.querySelector(".textLayer");
                     if (textLayerDiv) {
                         var textElements = Array.from(textLayerDiv.getElementsByTagName('span'));
-    
-                        let matches = [];
-                        let matchIndex = 0;
-    
+
                         for (let i = 0; i < textElements.length; i++) {
-                            if (textElements[i].textContent.includes(keywords[matchIndex])) {
+                            let currentChar = characters[matchIndex];
+                            let nextChar = characters[matchIndex + 1] || '';
+                            let combinedChars = currentChar + ' ' + nextChar;
+
+                            if (textElements[i].textContent.includes(currentChar) || textElements[i].textContent.includes(combinedChars)) {
                                 matches.push(textElements[i]);
                                 matchIndex++;
-    
-                                if (matchIndex >= keywords.length) {
-                                    matches.forEach(element => element.classList.add('highlight'));
-                                    matches = [];
-                                    matchIndex = 0;
-                                }
-                            } else {
-                                matches = [];
-                                matchIndex = 0;
+                            }
+
+                            if (i < textElements.length - 1 && textElements[i].textContent.endsWith(currentChar) && textElements[i + 1].textContent.startsWith(nextChar)) {
+                                matches.push(textElements[i]);
+                                matches.push(textElements[i + 1]);
+                                matchIndex += 2;
+                                i++;
+                            }
+
+                            if (matchIndex >= characters.length) {
+                                matches.forEach(element => element.classList.add('highlight'));
                             }
                         }
                     }
                 }
-                break;
             }
         }
+
+        return pages;  // Return the array of pages
     }
-        
+
+
+
 
 
 
