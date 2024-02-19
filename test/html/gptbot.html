@@ -100,7 +100,28 @@
                 }
                 console.log("end:", msg);
                 gpt.wholeMsg = wholeMsg + msg;
-                //parent.markdown.setText(msg);
+                var info = JSON.parse(msg);
+                console.log(info);
+                var links = "";
+                var idxLink = 1;
+                for (var i in info) {
+                    if (i > 0 && info[i]['score'] < 0.8) continue;
+                    var content = info[i]['content'].split('\n');
+                    var keyword = "";
+                    for (var line in content) {
+                        if (content[line].trim() != ""
+                            && !content[line].trim().startsWith('#')
+                            && !content[line].trim().startsWith('https://')) {
+                            keyword = content[line];
+                            //console.log("keyword:", keyword);
+                            break;
+                        }
+                    }
+                    var link = `((async function(){await parent.pdf.load_and_find('${info[i]['url']}','${keyword}')})())`;
+                    links += `<a href="#" onclick="${link}">[${idxLink++}]</a> `
+                }
+                console.log(info);
+                gpt.write(gpt.read() + `<br>${links}`);
                 gpt.setEnable(true);
                 gpt.done();
             } else {
